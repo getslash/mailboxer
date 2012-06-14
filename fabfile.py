@@ -9,7 +9,7 @@ _TESTING_MONGO_DB_PATH = "/tmp/__autoclave_testing_mongodb"
 _TESTING_NGINX_CONF_FILE = "/tmp/__autoclave_testing_nginx.conf"
 
 def compile_css():
-    local("lessc static_src/style.less > static/css/style.css")
+    local("lessc --compress static_src/style.less > static/css/style.css")
 
 def testing_fixture():
     with open(_TESTING_NGINX_CONF_FILE, "w") as nginx_conf:
