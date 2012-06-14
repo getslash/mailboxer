@@ -68,6 +68,11 @@ http {
 
      server  {
              listen {{tcp_port}};
+
+             location ^~ /static {
+                      root {{config.AUTOCLAVE_STATIC_ROOT}};
+             }
+
              location / {
                      proxy_pass         http://127.0.0.1:{{config.AUTOCLAVE_APP_TCP_PORT}}/;
                      proxy_redirect off;
@@ -75,6 +80,7 @@ http {
                      proxy_set_header   Host             $proxy_host;
                      proxy_set_header   X-Real-IP        $remote_addr;
              }
+
 
      }
 }

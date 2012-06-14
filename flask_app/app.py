@@ -3,7 +3,7 @@ from flaskext.openid import OpenID
 from .logs import blueprint
 from . import config
 from . import auth
-from werkzeug.contrib.fixers import ProxyFix
+from .utils import render_template
 
 app = flask.Flask(__name__)
 app.config.update(config.__dict__)
@@ -13,7 +13,7 @@ oid = OpenID(app)
 def index():
     if not auth.is_authenticated():
         return flask.redirect("/login")
-    return flask.make_response("Hello, {}".format(auth.get_user_email()))
+    return render_template("index.html")
 
 @app.route('/login')
 @oid.loginhandler
