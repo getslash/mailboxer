@@ -1,0 +1,10 @@
+celery
+fabric
+flask
+Flask-OpenID
+gevent
+jinja2
+nose
+pymongo
+python-cjson
+
