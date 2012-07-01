@@ -70,7 +70,7 @@ http {
              listen {{tcp_port}};
 
              location ^~ /static {
-                      alias {{config.AUTOCLAVE_STATIC_ROOT}};
+                      alias {{static_root}};
                       autoindex on;
              }
 
