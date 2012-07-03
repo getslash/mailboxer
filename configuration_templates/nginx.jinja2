@@ -25,6 +25,7 @@ http {
 
     {% if not daemon %}
     error_log stderr;
+    access_log  stderr;
     {% endif %}
 
     server_tokens       off;
