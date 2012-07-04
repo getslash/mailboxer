@@ -1,7 +1,16 @@
 {% extends "layout.html" %}
 
 {% block body %}
-<button class="btn">
 hello
+<button class="btn" id="demo-alert-info">
+Info alert
 </button>
+{% endblock %}
+
+{% block script %}
+$(function() {
+  $("#demo-alert-info").click(function () {
+     autoclave.notify_info("info");
+  });
+});
 {% endblock %}

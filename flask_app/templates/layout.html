@@ -7,6 +7,8 @@
       }
     </style>
     <link rel="stylesheet" href="/static/css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="/static/css/pnotify.css" type="text/css" />
+    <link rel="stylesheet" href="/static/css/pnotify.default.icons.css" type="text/css" />
     <link rel="shortcut icon" href="/static/ico/favicon.ico"/>
     <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/static/ico/apple-touch-icon-144-precomposed.png"/>
     <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/static/ico/apple-touch-icon-114-precomposed.png"/>
@@ -37,6 +39,7 @@
    {% endblock %}
    </div>
    <script src="/static/js/jquery.min.js"></script>
+   <script src="/static/js/autoclave-notifications.js"></script>
    <script src="/static/js/bootstrap-transition.js"></script>
    <script src="/static/js/bootstrap-alert.js"></script>
    <script src="/static/js/bootstrap-modal.js"></script>
@@ -49,5 +52,10 @@
    <script src="/static/js/bootstrap-collapse.js"></script>
    <script src="/static/js/bootstrap-carousel.js"></script>
    <script src="/static/js/bootstrap-typeahead.js"></script>
+   <script src="/static/js/pnotify.min.js"></script>
+   <script type="text/javascript">
+   {% block script %}
+   {% endblock %}
+   </script>
   </body>
 </html>
