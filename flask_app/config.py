@@ -3,7 +3,7 @@ SECRET_KEY = "4042e86014be1712ee47c522e6e374f4a63da171096c7d2b5719be33a3e85aea6d
 
 AUTOCLAVE_APP_NAME                     = "autoclave"
 
-AUTOCLAVE_APP_TCP_PORT                 = 8000
+AUTOCLAVE_APP_TCP_PORT                 = 5353
 AUTOCLAVE_DATABASE_HOST                = "127.0.0.1"
 AUTOCLAVE_DEPLOYMENT_FRONTEND_TCP_PORT = 80
 AUTOCLAVE_STATIC_ROOT                  = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "static"))
