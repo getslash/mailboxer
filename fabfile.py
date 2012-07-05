@@ -17,7 +17,7 @@ _TESTING_NGINX_CONF_FILE = "/tmp/__autoclave_testing_nginx.conf"
 def compile_css():
     local("lessc --compress static_src/style.less > static/css/style.css")
 
-def testing_fixture():
+def debug():
     with open(_TESTING_NGINX_CONF_FILE, "w") as nginx_conf:
         nginx_conf.write(_generate_testing_nginx_configuration())
     local("rm -rf {}".format(_TESTING_MONGO_DB_PATH))
