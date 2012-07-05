@@ -27,3 +27,5 @@ pip-log.txt
 .mr.developer.cfg
 .envrc
 node_modules
+celerybeat-schedule
+dump.rdb
