@@ -2,7 +2,6 @@ if (autoclave === undefined) {
     var autoclave = {};
 }
 
-
 autoclave.notify = function(msg, type) {
     $.pnotify.defaults.history = false;
     $.pnotify({
