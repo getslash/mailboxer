@@ -1,12 +1,15 @@
 import flask
 from flaskext.openid import OpenID
-from .logs import blueprint
 from . import config
 from . import auth
+from .api import api
 from .utils import render_template
 
 app = flask.Flask(__name__)
 app.config.update(config.__dict__)
+
+app.register_blueprint(api.api_blueprint, url_prefix="/api/1.0")
+
 oid = OpenID(app)
 
 @app.route("/")
