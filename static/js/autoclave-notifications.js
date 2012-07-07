@@ -16,8 +16,14 @@ autoclave.notify_info = function(msg) {
     autoclave.notify(msg, "info");
 }
 
-function __get_notify_div(cls) {
-    var returned = $('<div class="alert fade in"></div>');
-    returned.addClass(cls);
-    return returned;
+autoclave.notify_warning = function(msg) {
+    autoclave.notify(msg, "warning");
+}
+
+autoclave.notify_error = function(msg) {
+    autoclave.notify(msg, "error");
+}
+
+autoclave.notify_success = function(msg) {
+    autoclave.notify(msg, "success");
 }
