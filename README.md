@@ -38,3 +38,45 @@ To deploy your app, just run `fab deploy`:
 
    fab deploy -H your_host -u root -p yourpassword
 
+What's Inside?
+==============
+
+HTML, CSS
+---------
+
+Autoclave includes the excellent Twitter Bootsrap by default. You can add and override styles by editing `static_src/style.less` and rebuilding the CSS with `fab compile_css`.
+
+Javascript
+----------
+
+### Notifications
+
+Notifications can be easily achieved like so:
+
+ autoclave.notify_info("Hey there!");
+
+Or alternatively:
+
+ autoclave.notify("Hello", "error");
+
+Available notification types are "error", "warning", "info" and "success", as in [pnotify](http://pinesframework.org/pnotify/).
+
+### API
+
+Making your app's client-side code call into the backend via a clean API doesn't have to be a mess. Define your API as a Python function decorated with the `api_handler` decorator:
+
+  from .api import api_handler
+  
+  @api_handler("/format_string_and_two_numbers", string=str, a=int, b=int)
+  def format(string, a, b):
+      return {"result" : "{}{}{}".format(string, a, b)}
+
+And your function will be accessible for POSTing through *<API ROOT>*/format_string_and_two_numbers. (API ROOT is set with AUTOCLAVE_API_ROOT in the configuration file). Calling your function is done by posting a JSON dict with the arguments to the specified URL, and the returned JSON is the exact dict returned by the function. Adding code that calls this from your app's client-side Javascript is easy:
+
+  autoclave.api.call("/api/format_string_and_two_numbers", {"string" : "hello", "a" : 2, "b", 3})
+     .success(function(data) {
+         autoclave.notify_success("Result is " + data.result)
+     });
+
+Also, Autoclave provides the @returns_json decorator for views that want to return simple Pythonic values to be translated into JSON automatically.
+

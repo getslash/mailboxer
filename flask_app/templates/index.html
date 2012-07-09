@@ -23,7 +23,7 @@ A strong, pressurized, heated vessel, as for laboratory experiments, sterilizati
       <div class="example">
         <pre>
 d = autoclave.api.call(
-       "/api/1.0/example_sum",
+       "/api/example_sum",
        {"a" : 1, "b" : 2});
 d.success(function(data) {
   autoclave.notify_success("Result is " + data.result)
@@ -36,6 +36,7 @@ d.success(function(data) {
 {% endblock %}
 
 {% block script %}
+<script type="text/javascript">
 $(function() {
   $(".example").each(function() {
      var code = $(this).find("pre").text();
@@ -43,8 +44,6 @@ $(function() {
      button.appendTo($(this));
      button.click(function() {eval(code)});
   });
-  $(".alert-demo-btn").click(function () {
-     autoclave.notify("This is a notification", $(this).data("type"));
-  });
 });
+</script>
 {% endblock %}

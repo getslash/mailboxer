@@ -6,17 +6,24 @@ from .api_signature import get_api_function_signature
 
 api_blueprint = Blueprint("api_blueprint", __name__)
 
+def returns_json(func):
+    @functools.wraps(func)
+    def new_func():
+        result = func()
+        response = make_response(cjson.encode(result))
+        response.headers["Content-Type"] = "application/json"
+        return response
+    return new_func
+
 def api_handler(path, **argtypes):
     def decorator(func):
         signature = get_api_function_signature(func, argtypes)
         @functools.wraps(func)
+        @returns_json
         def new_func():
             args = request.json
             _normalize_args(args, signature)
-            result = func(**request.json)
-            response = make_response(cjson.encode(result))
-            response.headers["Content-Type"] = "application/json"
-            return response
+            return func(**args)
         return api_blueprint.route(path, methods=["POST"])(new_func)
     return decorator
 

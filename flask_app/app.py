@@ -8,7 +8,7 @@ from .utils import render_template
 app = flask.Flask(__name__)
 app.config.update(config.__dict__)
 
-app.register_blueprint(api.api_blueprint, url_prefix="/api/1.0")
+app.register_blueprint(api.api_blueprint, url_prefix=config.AUTOCLAVE_API_ROOT)
 
 oid = OpenID(app)
 
