@@ -6,9 +6,9 @@ from .api import api
 from .utils import render_template
 
 app = flask.Flask(__name__)
-app.config.update(config.__dict__)
+app.config.update(config.flask.__dict__)
 
-app.register_blueprint(api.api_blueprint, url_prefix=config.AUTOCLAVE_API_ROOT)
+app.register_blueprint(api.api_blueprint, url_prefix=config.autoclave.AUTOCLAVE_API_ROOT)
 
 oid = OpenID(app)
 

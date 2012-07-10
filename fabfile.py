@@ -23,12 +23,14 @@ def debug():
     local("rm -rf {}".format(_TESTING_MONGO_DB_PATH))
     local("mkdir -p {}".format(_TESTING_MONGO_DB_PATH))
 
+    src_root = os.path.dirname(__file__)
+
     commands = [
-        "{} {}/run.py -d".format(sys.executable, os.path.dirname(__file__)),
+        "{} {}/run.py -d".format(sys.executable, src_root),
         "nginx -c {}".format(_TESTING_NGINX_CONF_FILE),
         "mongod --auth --dbpath {}".format(_TESTING_MONGO_DB_PATH),
         "redis-server",
-        "sleep 5 && celeryd -B",
+        "sleep 5 && cd {} && celeryd -B --config=flask_app.config.celery".format(src_root),
         "rabbitmq-server",
         ]
     _run_tmux_session("autoclave-test", commands)
@@ -38,10 +40,10 @@ def deploy():
 
     _deploy_ensure_user()
     for directory in (
-            config.AUTOCLAVE_DEPLOY_ROOT,
-            config.AUTOCLAVE_DATA_ROOT,
-            config.AUTOCLAVE_REDIS_DB_PATH,
-            config.AUTOCLAVE_MONGO_DB_PATH,
+            config.autoclave.AUTOCLAVE_DEPLOY_ROOT,
+            config.autoclave.AUTOCLAVE_DATA_ROOT,
+            config.autoclave.AUTOCLAVE_REDIS_DB_PATH,
+            config.autoclave.AUTOCLAVE_MONGO_DB_PATH,
         ):
         _deploy_ensure_dir(directory)
 
@@ -54,42 +56,42 @@ def deploy():
 
     _deploy_sync_project()
 
-    _deploy_run_as_autoclave_user("virtualenv {}/env".format(config.AUTOCLAVE_DEPLOY_ROOT))
-    _deploy_run_as_autoclave_user("{0}/env/bin/pip install -r {0}/src/pip_requirements.txt".format(config.AUTOCLAVE_DEPLOY_ROOT))
+    _deploy_run_as_autoclave_user("virtualenv {}/env".format(config.autoclave.AUTOCLAVE_DEPLOY_ROOT))
+    _deploy_run_as_autoclave_user("{0}/env/bin/pip install -r {0}/src/pip_requirements.txt".format(config.autoclave.AUTOCLAVE_DEPLOY_ROOT))
 
-    require.supervisor.process(config.AUTOCLAVE_APP_NAME,
-        command='{0}/env/bin/python {0}/src/run.py'.format(config.AUTOCLAVE_DEPLOY_ROOT),
-        directory=config.AUTOCLAVE_DEPLOY_SRC_ROOT,
-        user=config.AUTOCLAVE_USER_NAME,
+    require.supervisor.process(config.autoclave.AUTOCLAVE_APP_NAME,
+        command='{0}/env/bin/python {0}/src/run.py'.format(config.autoclave.AUTOCLAVE_DEPLOY_ROOT),
+        directory=config.autoclave.AUTOCLAVE_DEPLOY_SRC_ROOT,
+        user=config.autoclave.AUTOCLAVE_USER_NAME,
         )
 
-    require.supervisor.process(config.AUTOCLAVE_CELERY_WORKER_SERVICE_NAME,
-        command="{0}/env/bin/celeryd -B".format(config.AUTOCLAVE_DEPLOY_ROOT),
-        directory=config.AUTOCLAVE_DEPLOY_SRC_ROOT,
-        user=config.AUTOCLAVE_USER_NAME,
+    require.supervisor.process(config.autoclave.AUTOCLAVE_CELERY_WORKER_SERVICE_NAME,
+        command="{0}/env/bin/celeryd -B --config=flask_app.config.celery".format(config.autoclave.AUTOCLAVE_DEPLOY_ROOT),
+        directory=config.autoclave.AUTOCLAVE_DEPLOY_SRC_ROOT,
+        user=config.autoclave.AUTOCLAVE_USER_NAME,
         )
 
-    put(StringIO(_generate_production_nginx_configuration(config.AUTOCLAVE_DEPLOY_ROOT)), "/etc/nginx/nginx.conf", use_sudo=True)
+    put(StringIO(_generate_production_nginx_configuration(config.autoclave.AUTOCLAVE_DEPLOY_ROOT)), "/etc/nginx/nginx.conf", use_sudo=True)
     fabtools.service.restart("nginx")
 
 
 def _deploy_stop_previous_instance():
     for service in (
-            config.AUTOCLAVE_APP_NAME,
-            config.AUTOCLAVE_CELERY_WORKER_SERVICE_NAME,
+            config.autoclave.AUTOCLAVE_APP_NAME,
+            config.autoclave.AUTOCLAVE_CELERY_WORKER_SERVICE_NAME,
         ):
         with settings(warn_only=True):
-            sudo("supervisorctl stop {}".format(config.AUTOCLAVE_APP_NAME))
+            sudo("supervisorctl stop {}".format(config.autoclave.AUTOCLAVE_APP_NAME))
 
 def _deploy_ensure_user():
-    require.user(config.AUTOCLAVE_USER_NAME)
+    require.user(config.autoclave.AUTOCLAVE_USER_NAME)
 def _deploy_ensure_dir(directory):
     require.directory(directory, use_sudo=True)
-    sudo("chown -R {} {}".format(config.AUTOCLAVE_USER_NAME, directory))
+    sudo("chown -R {} {}".format(config.autoclave.AUTOCLAVE_USER_NAME, directory))
 
 def _deploy_setup_redis():
     require.deb.packages(["redis-server"])
-    put(StringIO("dir {}".format(config.AUTOCLAVE_REDIS_DB_PATH)), "/etc/redis.conf", use_sudo=True)
+    put(StringIO("dir {}".format(config.autoclave.AUTOCLAVE_REDIS_DB_PATH)), "/etc/redis.conf", use_sudo=True)
     fabtools.service.restart("redis-server")
 
 def _deploy_setup_mongo():
@@ -99,7 +101,7 @@ def _deploy_setup_mongo():
 dbpath = {}
 
 # Only accept local connections
-bind_ip = 127.0.0.1""".format(config.AUTOCLAVE_MONGO_DB_PATH)), "/etc/mongod.conf", use_sudo=True)
+bind_ip = 127.0.0.1""".format(config.autoclave.AUTOCLAVE_MONGO_DB_PATH)), "/etc/mongod.conf", use_sudo=True)
     fabtools.service.restart("mongodb")
 
 def _deploy_sync_project():
@@ -107,14 +109,14 @@ def _deploy_sync_project():
     rsync_project(local_dir=_PROJECT_PATH + "/",
                   remote_dir=tmp_dir,
                   delete=True, exclude=".git")
-    _deploy_run_as_autoclave_user("rsync -rv {}/ {}/".format(tmp_dir, config.AUTOCLAVE_DEPLOY_SRC_ROOT))
+    _deploy_run_as_autoclave_user("rsync -rv {}/ {}/".format(tmp_dir, config.autoclave.AUTOCLAVE_DEPLOY_SRC_ROOT))
 
 def _deploy_run_as_autoclave_user(cmd):
-    sudo(cmd, user=config.AUTOCLAVE_USER_NAME)
+    sudo(cmd, user=config.autoclave.AUTOCLAVE_USER_NAME)
 
 def _generate_testing_nginx_configuration():
-    return configuration_templates.nginx.render(tcp_port=config.AUTOCLAVE_TESTING_FRONTEND_TCP_PORT,
-                                                static_root=config.AUTOCLAVE_STATIC_ROOT,
+    return configuration_templates.nginx.render(tcp_port=config.autoclave.AUTOCLAVE_TESTING_FRONTEND_TCP_PORT,
+                                                static_root=config.autoclave.AUTOCLAVE_STATIC_ROOT,
                                                 daemon=False, config=config)
 def _generate_production_nginx_configuration(installation_root):
     return configuration_templates.nginx.render(tcp_port=80,
