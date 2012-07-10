@@ -30,7 +30,7 @@ def debug():
         "nginx -c {}".format(_TESTING_NGINX_CONF_FILE),
         "mongod --auth --dbpath {}".format(_TESTING_MONGO_DB_PATH),
         "redis-server",
-        "sleep 5 && cd {} && celeryd -B --config=flask_app.config.celery".format(src_root),
+        "cd {} && celeryd -l DEBUG -B --config=flask_app.config.celery".format(src_root),
         "rabbitmq-server",
         ]
     _run_tmux_session("autoclave-test", commands)
