@@ -24,5 +24,5 @@ def get_api_function_signature(func, argtypes):
     unknown = set(argtypes) - set(argspec.args)
     if unknown:
         raise UnknownArgumentsException("The following arguments aren't real arguments")
-    optionals = set(argspec.args[-len(argspec.defaults or ())])
+    optionals = set(argspec.args[-len(argspec.defaults or ()):])
     return Signature(argtypes, optionals)
