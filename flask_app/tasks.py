@@ -7,5 +7,3 @@ celery = Celery("tasks", broker=celery_config.BROKER_URL)
 # @celery.task
 # def some_task(arg1, arg2):
 #     do_something()
-
-

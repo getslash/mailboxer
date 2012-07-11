@@ -46,6 +46,17 @@ HTML, CSS
 
 Autoclave includes the excellent Twitter Bootsrap by default. You can add and override styles by editing `static_src/style.less` and rebuilding the CSS with `fab compile_css`.
 
+Background Tasks with Celery
+----------------------------
+
+You can easily add background tasks to your webapp by editing `flask_app/tasks.py`. For instance, you can add:
+
+ @celery.task
+ def test_task():
+     time.sleep(5)
+
+For more information on how to fire your task, refer to the [Celery documentation](http://www.celeryproject.org/docs-and-support/).
+
 Javascript
 ----------
 
