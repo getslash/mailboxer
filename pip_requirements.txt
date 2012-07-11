@@ -8,4 +8,5 @@ jinja2
 nose
 pymongo
 python-cjson
+redis
 

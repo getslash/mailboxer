@@ -46,6 +46,24 @@ HTML, CSS
 
 Autoclave includes the excellent Twitter Bootsrap by default. You can add and override styles by editing `static_src/style.less` and rebuilding the CSS with `fab compile_css`.
 
+Data Storage with MongoDB
+-------------------------
+
+To get a MongoDB connection (via Pymongo):
+
+ from .db import get_connection
+ connection = get_connection()
+ connection["my_db"]["my_collection"].find({"field" : "value"})
+
+Caching, Key-Value Store and IPC with Redis
+-------------------------------------------
+
+For many use cases like distributed locking, caching etc. Redis is extremely useful. Autoclave includes Redis, and a working binding:
+
+ from .redis import get_connection
+ connection = get_connection() # a redis-py StrictRedis connection
+ connection.set("key", "value")
+
 Background Tasks with Celery
 ----------------------------
 
@@ -77,7 +95,7 @@ Available notification types are "error", "warning", "info" and "success", as in
 Making your app's client-side code call into the backend via a clean API doesn't have to be a mess. Define your API as a Python function decorated with the `api_handler` decorator:
 
   from .api import api_handler
-  
+
   @api_handler("/format_string_and_two_numbers", string=str, a=int, b=int)
   def format(string, a, b):
       return {"result" : "{}{}{}".format(string, a, b)}
@@ -90,4 +108,3 @@ And your function will be accessible for POSTing through *<API ROOT>*/format_str
      });
 
 Also, Autoclave provides the @returns_json decorator for views that want to return simple Pythonic values to be translated into JSON automatically.
-
