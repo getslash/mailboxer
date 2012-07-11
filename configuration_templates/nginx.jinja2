@@ -76,7 +76,7 @@ http {
              }
 
              location / {
-                     proxy_pass         http://127.0.0.1:{{config.AUTOCLAVE_APP_TCP_PORT}}/;
+                     proxy_pass         http://127.0.0.1:{{config.autoclave.AUTOCLAVE_APP_TCP_PORT}}/;
                      proxy_redirect off;
 
                      proxy_set_header   Host             $http_host;
