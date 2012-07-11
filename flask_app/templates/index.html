@@ -24,7 +24,6 @@ A strong, pressurized, heated vessel, as for laboratory experiments, sterilizati
 {% endblock %}
 
 {% block script %}
-<script type="text/javascript">
 $(function() {
   $(".example").each(function() {
      var code = $(this).find("pre").text();
@@ -33,5 +32,4 @@ $(function() {
      button.click(function() {eval(code)});
   });
 });
-</script>
 {% endblock %}
