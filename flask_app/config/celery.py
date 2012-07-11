@@ -10,8 +10,4 @@ CELERYBEAT_SCHEDULE = {
 #    "schedule" : timedelta(seconds=30),
 #    "args" : ("arg1", "arg2"),
 #}
-    "bla" : {
-        "task" : "flask_app.tasks.test_test",
-        "schedule" : timedelta(seconds=5),
-    }
 }
