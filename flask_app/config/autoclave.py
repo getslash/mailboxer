@@ -16,6 +16,6 @@ AUTOCLAVE_MONGO_DB_PATH                = os.path.join(AUTOCLAVE_DATA_ROOT, "mong
 AUTOCLAVE_APP_TCP_PORT                 = 5353
 AUTOCLAVE_DATABASE_HOST                = "127.0.0.1"
 AUTOCLAVE_DEPLOYMENT_FRONTEND_TCP_PORT = 80
-AUTOCLAVE_STATIC_ROOT                  = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "static"))
+AUTOCLAVE_STATIC_ROOT                  = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "static"))
 AUTOCLAVE_TESTING_FRONTEND_TCP_PORT    = 8080
 
