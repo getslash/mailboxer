@@ -23,6 +23,9 @@ def debug():
     local("rm -rf {}".format(_TESTING_MONGO_DB_PATH))
     local("mkdir -p {}".format(_TESTING_MONGO_DB_PATH))
 
+    celeryd_executable = str(local("which celeryd", capture=True))
+    assert os.path.exists(celeryd_executable)
+
     src_root = os.path.dirname(__file__)
 
     commands = [
@@ -30,7 +33,7 @@ def debug():
         "nginx -c {}".format(_TESTING_NGINX_CONF_FILE),
         "mongod --auth --dbpath {}".format(_TESTING_MONGO_DB_PATH),
         "redis-server",
-        "cd {} && celeryd -l DEBUG -B --config=flask_app.config.celery".format(src_root),
+        "cd {} && {} -l DEBUG -B --config=flask_app.config.celery".format(src_root, celeryd_executable),
         "rabbitmq-server",
         ]
     _run_tmux_session("autoclave-test", commands)
