@@ -42,8 +42,3 @@ def _normalize_args(args, signature):
         missing.remove(key)
     if missing - signature.optionals:
         abort(httplib.BAD_REQUEST)
-
-
-@api_handler("/example_sum", a=int, b=int)
-def sum(a, b):
-    return {"result" : 6}
