@@ -20,7 +20,7 @@ Getting Started
 
 1. Clone the autoclave repository to your development environment. Let's say you put it in `~/autoclave`.
 2. Install dependencies: `pip install -r ~/autoclave/pip_requirements`
-3. Make sure you have `tmux` installed on your system. You'll need it for development/debugging.
+3. To debug autoclave, you'll need `tmux`, `redis`, `mongodb`, `rabbitmq` and `nginx`.
 4. Chdir into the directory, and run your first instance: `fab debug`. This will bring up *tmux* with several panes, one for each running service.
 5. Open your browser and point it to *http://127.0.0.1:8080*, and voilla!
 
