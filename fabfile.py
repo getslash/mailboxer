@@ -30,7 +30,6 @@ def debug():
 
     commands = [
         "{} {}/run.py -d".format(sys.executable, src_root),
-        "nginx -c {}".format(_TESTING_NGINX_CONF_FILE),
         "mongod --auth --dbpath {}".format(_TESTING_MONGO_DB_PATH),
         "redis-server",
         "cd {} && {} -l DEBUG -B --config=flask_app.config.celery".format(src_root, celeryd_executable),

@@ -14,7 +14,7 @@ parser.add_argument("-v", "--verbose", action="store_true", default=False)
 def main(args):
     from gevent.wsgi import WSGIServer
     if args.debug:
-        app.run(debug=True, port=config.autoclave.AUTOCLAVE_APP_TCP_PORT)
+        app.run(debug=True, port=config.autoclave.AUTOCLAVE_TESTING_FRONTEND_TCP_PORT)
     else:
         http_server = WSGIServer(("0.0.0.0", config.autoclave.AUTOCLAVE_APP_TCP_PORT), app)
         http_server.serve_forever()
