@@ -58,7 +58,9 @@ def deploy():
 
     _deploy_sync_project()
 
-    _deploy_run_as_autoclave_user("virtualenv {}/env".format(config.autoclave.AUTOCLAVE_DEPLOY_ROOT))
+    virtualenv_path = "{}/env".format(config.autoclave.AUTOCLAVE_DEPLOY_ROOT)
+    if not fabtools.files.is_dir(virtualenv_path):
+        _deploy_run_as_autoclave_user("virtualenv {}".format(virtualenv_path))
     _deploy_run_as_autoclave_user("{0}/env/bin/pip install -r {0}/src/pip_requirements.txt".format(config.autoclave.AUTOCLAVE_DEPLOY_ROOT))
 
     require.supervisor.process(config.autoclave.AUTOCLAVE_APP_NAME,
