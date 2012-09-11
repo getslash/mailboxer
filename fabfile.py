@@ -64,7 +64,7 @@ def deploy():
     _deploy_run_as_autoclave_user("{0}/env/bin/pip install -r {0}/src/pip_requirements.txt".format(config.autoclave.AUTOCLAVE_DEPLOY_ROOT))
 
     require.supervisor.process(config.autoclave.AUTOCLAVE_APP_NAME,
-        command='{0}/env/bin/python {0}/src/run.py'.format(config.autoclave.AUTOCLAVE_DEPLOY_ROOT),
+        command="{0}/env/bin/uwsgi --chmod-socket 666 -H {0}/env -w flask_app.app:app -s {1}".format(config.autoclave.AUTOCLAVE_DEPLOY_ROOT, config.autoclave.AUTOCLAVE_UWSGI_UNIX_SOCK_PATH),
         directory=config.autoclave.AUTOCLAVE_DEPLOY_SRC_ROOT,
         user=config.autoclave.AUTOCLAVE_USER_NAME,
         )
@@ -77,15 +77,21 @@ def deploy():
 
     put(StringIO(_generate_production_nginx_configuration(config.autoclave.AUTOCLAVE_DEPLOY_ROOT)), "/etc/nginx/nginx.conf", use_sudo=True)
     fabtools.service.restart("nginx")
-
+    _deploy_start_instance()
 
 def _deploy_stop_previous_instance():
+    _deploy_supervisord_action("stop")
+
+def _deploy_start_instance():
+    _deploy_supervisord_action("start")
+
+def _deploy_supervisord_action(action):
     for service in (
             config.autoclave.AUTOCLAVE_APP_NAME,
             config.autoclave.AUTOCLAVE_CELERY_WORKER_SERVICE_NAME,
         ):
         with settings(warn_only=True):
-            sudo("supervisorctl stop {}".format(config.autoclave.AUTOCLAVE_APP_NAME))
+            sudo("supervisorctl {} {}".format(action, service))
 
 def _deploy_ensure_user():
     require.user(config.autoclave.AUTOCLAVE_USER_NAME)
@@ -124,7 +130,8 @@ def _generate_testing_nginx_configuration():
                                                 daemon=False, config=config)
 def _generate_production_nginx_configuration(installation_root):
     return configuration_templates.nginx.render(tcp_port=80,
-                                                static_root="{}/src/static".format(installation_root),
+                                                static_root="{}/src/flask_app/static".format(installation_root),
+                                                uwsgi_socket_path=config.autoclave.AUTOCLAVE_UWSGI_UNIX_SOCK_PATH,
                                                 daemon=True, config=config)
 
 

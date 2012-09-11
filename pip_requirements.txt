@@ -9,4 +9,4 @@ nose
 pymongo
 python-cjson
 redis
-
+uwsgi
