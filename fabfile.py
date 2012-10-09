@@ -37,6 +37,12 @@ def debug():
         ]
     _run_tmux_session("autoclave-test", commands)
 
+
+def deploy_vagrant():
+    local("vagrant up")
+    with settings(user="vagrant", host_string="127.0.0.1", port=2222, key_filename="~/.vagrant.d/insecure_private_key"):
+        deploy()
+
 def deploy():
     _deploy_stop_previous_instance()
 
