@@ -2,13 +2,13 @@ import flask
 from flaskext.openid import OpenID
 from . import config
 from . import auth
-from .api import api
+from . import mailboxer
 from .utils import render_template
 
 app = flask.Flask(__name__)
 app.config.update(config.flask.__dict__)
 
-app.register_blueprint(api.api_blueprint, url_prefix=config.app.API_ROOT)
+app.register_blueprint(mailboxer.blueprint)
 
 oid = OpenID(app)
 
@@ -16,7 +16,7 @@ oid = OpenID(app)
 def index():
     if not auth.is_authenticated():
         return flask.redirect("/login")
-    return render_template("index.html")
+    return flask.redirect("/summary")
 
 @app.route('/login')
 @oid.loginhandler

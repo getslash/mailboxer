@@ -14,6 +14,8 @@ _PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 _TESTING_MONGO_DB_PATH = "/tmp/__autoclave_testing_mongodb"
 _TESTING_NGINX_CONF_FILE = "/tmp/__autoclave_testing_nginx.conf"
 
+MAILBOXR_SMTPD_SERVICE_NAME = "mailboxer_smtpd"
+
 def compile_css():
     local("lessc --compress static_src/style.less > static/css/style.css")
 
@@ -30,6 +32,7 @@ def debug():
 
     commands = [
         "{} {}/run.py -d".format(sys.executable, src_root),
+        "{} {}/mailboxer_smtpd.py -p 2525".format(sys.executable, src_root),
         "mongod --auth --dbpath {}".format(_TESTING_MONGO_DB_PATH),
         "redis-server",
         "cd {} && {} -l DEBUG -B --config=flask_app.config.celery".format(src_root, celeryd_executable),
@@ -75,10 +78,15 @@ def deploy():
         user=config.app.USER_NAME,
         )
 
+    require.supervisor.process(MAILBOXR_SMTPD_SERVICE_NAME,
+       command="{0}/env/bin/python {1}/mailboxer_smtpd.py".format(config.app.DEPLOY_ROOT, config.app.DEPLOY_SRC_ROOT),
+       user="root",
+       )
+
     require.supervisor.process(config.app.CELERY_WORKER_SERVICE_NAME,
         command="{0}/env/bin/celeryd -B --config=flask_app.config.celery".format(config.app.DEPLOY_ROOT),
-        directory=config.app.DEPLOY_SRC_ROOT,
-        user=config.app.USER_NAME,
+        directory=config.autoclave.DEPLOY_SRC_ROOT,
+        user=config.autoclave.USER_NAME,
         )
 
     put(StringIO(_generate_production_nginx_configuration(config.app.DEPLOY_ROOT)), "/etc/nginx/nginx.conf", use_sudo=True)
@@ -95,6 +103,7 @@ def _deploy_supervisord_action(action):
     for service in (
             config.app.APP_NAME,
             config.app.CELERY_WORKER_SERVICE_NAME,
+            MAILBOXR_SMTPD_SERVICE_NAME,
         ):
         with settings(warn_only=True):
             sudo("supervisorctl {} {}".format(action, service))
