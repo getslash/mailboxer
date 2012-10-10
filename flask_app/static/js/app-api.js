@@ -1,12 +1,12 @@
-if (autoclave === undefined) {
-    var autoclave = {};
+if (app === undefined) {
+    var app = {};
 }
 
-if (autoclave.api === undefined) {
-    autoclave.api = {};
+if (app.api === undefined) {
+    app.api = {};
 }
 
-autoclave.api.call = function(path, data) {
+app.api.call = function(path, data) {
     return $.ajax(path, {
         data : JSON.stringify(data),
         contentType : "application/json",
@@ -14,7 +14,7 @@ autoclave.api.call = function(path, data) {
         dataType: "json",
         type : "POST",
         error : function (request, msg, error) {
-            autoclave.notify_error("Ajax error on <b>" + path + "</b>: " + error);
+            app.notify_error("Ajax error on <b>" + path + "</b>: " + error);
         }
     });
 }

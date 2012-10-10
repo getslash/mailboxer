@@ -27,7 +27,7 @@ Getting Started
 Checklist for Starting an App
 =============================
 
-1. Change your app name in `flask_app/config.py -> AUTOCLAVE_APP_NAME`.
+1. Change your app name in `flask_app/config/app.py -> APP_NAME`.
 
 Deploying to a Server
 =====================
@@ -100,7 +100,7 @@ Making your app's client-side code call into the backend via a clean API doesn't
   def format(string, a, b):
       return {"result" : "{}{}{}".format(string, a, b)}
 
-And your function will be accessible for POSTing through *<API ROOT>*/format_string_and_two_numbers. (API ROOT is set with AUTOCLAVE_API_ROOT in the configuration file). Calling your function is done by posting a JSON dict with the arguments to the specified URL, and the returned JSON is the exact dict returned by the function. Adding code that calls this from your app's client-side Javascript is easy:
+And your function will be accessible for POSTing through *<API ROOT>*/format_string_and_two_numbers. (API ROOT is set with API_ROOT in the configuration file). Calling your function is done by posting a JSON dict with the arguments to the specified URL, and the returned JSON is the exact dict returned by the function. Adding code that calls this from your app's client-side Javascript is easy:
 
   autoclave.api.call("/api/format_string_and_two_numbers", {"string" : "hello", "a" : 2, "b", 3})
      .success(function(data) {

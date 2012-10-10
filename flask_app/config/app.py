@@ -1,0 +1,22 @@
+import os
+
+APP_NAME                     = "autoclave"
+USER_NAME                    = APP_NAME
+DEPLOY_ROOT                  = os.path.join("/opt", APP_NAME)
+DEPLOY_SRC_ROOT              = os.path.join(DEPLOY_ROOT, "src")
+
+UWSGI_UNIX_SOCK_PATH         = "/tmp/__{}.sock".format(APP_NAME)
+
+API_ROOT                     = "/api"
+
+CELERY_WORKER_SERVICE_NAME   = APP_NAME + "-celery"
+
+DATA_ROOT                    = "/data"
+REDIS_DB_PATH                = os.path.join(DATA_ROOT, "redis")
+MONGO_DB_PATH                = os.path.join(DATA_ROOT, "mongo")
+
+DATABASE_HOST                = "127.0.0.1"
+DEPLOYMENT_FRONTEND_TCP_PORT = 80
+TESTING_FRONTEND_TCP_PORT    = 8080
+STATIC_ROOT                  = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "static"))
+

@@ -1,5 +1,5 @@
 from . import (
     flask,
-    autoclave,
+    app,
     celery,
     )
