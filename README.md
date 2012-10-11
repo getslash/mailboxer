@@ -14,11 +14,11 @@ Installation
 
 To deploy to a server:
 
-   $ fab deploy -H root@server -p password
+    $ fab deploy -H root@server -p password
 
 To test on a vagrant machine:
 
-   $ fab deploy_vagrant
+    $ fab deploy_vagrant
 
 
 Usage
@@ -26,27 +26,27 @@ Usage
 
 To create a new mailbox:
 
-   $ curl -X POST http://mailboxer.mydomain.com/mailboxes -F name=myuser@somedomain.com
+    $ curl -X POST http://mailboxer.mydomain.com/mailboxes -F name=myuser@somedomain.com
 
 This will start storing incoming emails for myuser@somedomain.com. To get these emails:
 
-   $ curl http://mailboxer.mydomain.com/messages/myuser@somedomain.com
+    $ curl http://mailboxer.mydomain.com/messages/myuser@somedomain.com
 
 To delete a mailbox:
 
-   $ curl -X DELETE http://mailboxer.mydomain.com/mailboxes/myuser@somedomain.com/
+    $ curl -X DELETE http://mailboxer.mydomain.com/mailboxes/myuser@somedomain.com/
 
 To delete all mailboxes:
 
-   $ curl -X DELETE "http://mailboxer.mydomain.com/mailboxes/*"
+    $ curl -X DELETE "http://mailboxer.mydomain.com/mailboxes/*"
 
 To get all messages in an inbox:
 
-   $ curl http://mailboxer.mydomain.com/messages/myuser@somedomain.com
+    $ curl http://mailboxer.mydomain.com/messages/myuser@somedomain.com
 
 Or you can get only *unread* messages:
 
-   $ curl http://mailboxer.mydomain.com/messages/myuser@somedomain.com/unread
+    $ curl http://mailboxer.mydomain.com/messages/myuser@somedomain.com/unread
 
 Running Tests
 =============
@@ -55,10 +55,10 @@ The simplest setup for test running is having two shell windows - one for runnin
 
 In the first window, run:
 
-   $ fab debug
+    $ fab debug
 
 This will spawn a *tmux* session with multiple panes for each service, where the SMTP daemon will be on port 2525, and the web frontend on 8080. In the second window, run:
 
-   $ nosetests -w tests
+    $ nosetests -w tests
 
 And you're done.
