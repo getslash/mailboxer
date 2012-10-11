@@ -1,4 +1,5 @@
 from uuid import uuid1
+import httplib
 import requests
 import smtplib
 import urlparse
@@ -29,6 +30,10 @@ class MailboxesManagementTest(MailboxrTestBase):
         self.assertEquals(len(new_mailboxes), len(old_mailboxes) + 1)
         self._delete(self.url_base + "/mailboxes/" + self.email)
         self.assertEquals(self.get_mailboxes(), old_mailboxes)
+    def test__cannot_create_star_mailbox(self):
+        with self.assertRaises(requests.HTTPError) as caught:
+            self._post(self.url_base + "/mailboxes/", data=dict(name="*"))
+        self.assertEquals(caught.exception.response.status_code, httplib.BAD_REQUEST)
     def get_mailboxes(self):
         return self._get(self.url_base + "/mailboxes/").json
 

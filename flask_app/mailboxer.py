@@ -1,3 +1,6 @@
+from httplib import (
+    BAD_REQUEST,
+)
 from flask import abort
 from flask import Blueprint
 from flask import request
@@ -22,6 +25,8 @@ def get_all_mailboxes():
 @returns_json
 def add_mailbox():
     data = _check_request_data("name")
+    if "*" in data["name"]:
+        abort(BAD_REQUEST)
     get_mailbox_collection().save(data)
     assert isinstance(data["name"], basestring)
     return dict(name=data["name"])

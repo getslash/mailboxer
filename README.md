@@ -32,6 +32,10 @@ To delete a mailbox:
 
    $ curl -X DELETE http://mailboxer.mydomain.com/mailboxes/myuser@somedomain.com/
 
+To delete all mailboxes:
+
+   $ curl -X DELETE "http://mailboxer.mydomain.com/mailboxes/*"
+
 Running Tests
 =============
 
