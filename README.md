@@ -36,6 +36,14 @@ To delete all mailboxes:
 
    $ curl -X DELETE "http://mailboxer.mydomain.com/mailboxes/*"
 
+To get all messages in an inbox:
+
+   $ curl http://mailboxer.mydomain.com/messages/myuser@somedomain.com
+
+Or you can get only *unread* messages:
+
+   $ curl http://mailboxer.mydomain.com/messages/myuser@somedomain.com/unread
+
 Running Tests
 =============
 
