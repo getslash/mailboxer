@@ -1,7 +1,11 @@
-Mailboxr
+Mailboxer
 ========
 
-Mailboxr is a small server-side app that is intended for programmatic testing of mail delivery for long-running systems. It provides an SMTP server, and a simple REST api to manipulate mailboxes and queued emails.
+Mailboxer is a small server-side app that is intended for programmatic testing of mail delivery for long-running systems. It provides an SMTP server, and a simple REST api to manipulate mailboxes and queued emails.
+
+Unlike off-the-shelf SMTP servers, in which you have to edit configuration files and/or manipulate LDAP accounts to create and delete mailboxes, Mailboxer enables you to rapidly create and dispose of mailboxes through a programmatic API. Emails arriving at nonexistent mailboxes are automatically discarded quietly, and are only collected when a mailbox exists. You then can proceed to obtain the emails that did arrive through a dedicated API.
+
+This simplifies the "create a mailbox, trigger an action, make sure the corresponding email arrived" workflow.
 
 The ideal purpose for this tool is testing a long-running product (such as a web service, an appliance, etc.) that sends emails to multiple destinations (e.g. alerts and status reports), and be able to write test scenarios which manipulate multiple email recipients and makes sure mail arrives properly.
 
