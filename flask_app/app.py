@@ -1,5 +1,5 @@
 import flask
-from flaskext.openid import OpenID
+from flask.ext.openid import OpenID
 from . import config
 from . import auth
 from .api import api
