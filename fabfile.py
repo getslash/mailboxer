@@ -85,8 +85,8 @@ def deploy():
 
     require.supervisor.process(config.app.CELERY_WORKER_SERVICE_NAME,
         command="{0}/env/bin/celeryd -B --config=flask_app.config.celery".format(config.app.DEPLOY_ROOT),
-        directory=config.autoclave.DEPLOY_SRC_ROOT,
-        user=config.autoclave.USER_NAME,
+        directory=config.app.DEPLOY_SRC_ROOT,
+        user=config.app.USER_NAME,
         )
 
     put(StringIO(_generate_production_nginx_configuration(config.app.DEPLOY_ROOT)), "/etc/nginx/nginx.conf", use_sudo=True)

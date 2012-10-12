@@ -1,6 +1,6 @@
 import os
 
-APP_NAME                     = "autoclave"
+APP_NAME                     = "mailboxer"
 USER_NAME                    = APP_NAME
 DEPLOY_ROOT                  = os.path.join("/opt", APP_NAME)
 DEPLOY_SRC_ROOT              = os.path.join(DEPLOY_ROOT, "src")
