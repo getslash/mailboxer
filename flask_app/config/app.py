@@ -10,6 +10,8 @@ UWSGI_UNIX_SOCK_PATH         = "/tmp/__{}.sock".format(APP_NAME)
 UWSGI_LOG_PATH               = "/var/log/{}-uwsgi.log".format(APP_NAME)
 UWSGI_BUFFER_SIZE            = 16 * 1024
 
+REQUIRE_LOGIN                = True
+
 API_ROOT                     = "/api"
 
 CELERY_WORKER_SERVICE_NAME   = APP_NAME + "-celery"
