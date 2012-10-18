@@ -73,11 +73,32 @@ def deploy():
             _deploy_run_as_autoclave_user("virtualenv --distribute {}".format(virtualenv_path))
         _deploy_run_as_autoclave_user("{0}/env/bin/pip install -r {0}/src/pip_requirements.txt".format(config.app.DEPLOY_ROOT))
 
+    uwsgi_logrotate_file_path = "/etc/logrotate.d/{0}-uwsgi".format(config.app.APP_NAME)
+    require.file(uwsgi_logrotate_file_path,
+                 use_sudo=True,
+                 contents="""{config.app.UWSGI_LOG_PATH} {{
+    rotate 10
+    daily
+    compress
+    missingok
+    create 640 {config.app.USER_NAME} {config.app.USER_NAME}
+    postrotate
+        supervisorctl restart {config.app.APP_NAME}
+    endscript
+ }}""".format(config=config))
+
+    # we both call logrotate and "touch" the log file. The former is for cases where the log already existed
+    # while the latter is for cases in which the log file did not exist before
+    sudo("logrotate -f {0}".format(uwsgi_logrotate_file_path))
+    sudo("touch {config.app.UWSGI_LOG_PATH} && chown {config.app.USER_NAME}:{config.app.GROUP_NAME} {config.app.UWSGI_LOG_PATH}".format(config=config))
+
     require.supervisor.process(config.app.APP_NAME,
-        command="{0}/env/bin/uwsgi --chmod-socket 666 -H {0}/env -w flask_app.app:app -s {1}".format(config.app.DEPLOY_ROOT, config.app.UWSGI_UNIX_SOCK_PATH),
-        directory=config.app.DEPLOY_SRC_ROOT,
-        user=config.app.USER_NAME,
-        )
+                               command=("{config.app.DEPLOY_ROOT}/env/bin/uwsgi -b {config.app.UWSGI_BUFFER_SIZE} "
+                                       "--chmod-socket 666 -H {config.app.DEPLOY_ROOT}/env -w flask_app.app:app "
+                                       "-s {config.app.UWSGI_UNIX_SOCK_PATH} --logto={config.app.UWSGI_LOG_PATH}").format(config=config),
+                               directory=config.app.DEPLOY_SRC_ROOT,
+                               user=config.app.USER_NAME,
+                           )
 
     require.supervisor.process(MAILBOXR_SMTPD_SERVICE_NAME,
        command="{0}/env/bin/python {1}/mailboxer_smtpd.py".format(config.app.DEPLOY_ROOT, config.app.DEPLOY_SRC_ROOT),
@@ -113,7 +134,7 @@ def _deploy_ensure_user():
     require.user(config.app.USER_NAME)
 def _deploy_ensure_dir(directory):
     require.directory(directory, use_sudo=True)
-    sudo("chown -R {} {}".format(config.app.USER_NAME, directory))
+    sudo("chown -R {config.app.USER_NAME}:{config.app.GROUP_NAME} {dir}".format(config=config, dir=directory))
 
 def _deploy_setup_redis():
     require.deb.packages(["redis-server"])
