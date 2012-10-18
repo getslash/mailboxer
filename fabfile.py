@@ -59,7 +59,7 @@ def deploy():
     _deploy_setup_mongo()
 
     require.deb.packages([
-        "nginx", "rabbitmq-server", "python-virtualenv", "libevent-dev", "python-dev",
+        "nginx", "rabbitmq-server", "python-virtualenv", "libevent-dev", "python-dev", "build-essential"
     ])
 
     _deploy_sync_project()
