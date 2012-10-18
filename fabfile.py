@@ -70,8 +70,24 @@ def deploy():
             _deploy_run_as_autoclave_user("virtualenv --distribute {}".format(virtualenv_path))
         _deploy_run_as_autoclave_user("{0}/env/bin/pip install -r {0}/src/pip_requirements.txt".format(config.app.DEPLOY_ROOT))
 
-    sudo("touch {0}".format(config.app.UWSGI_LOG_PATH))
-    sudo("chown {0}:{0} {1}".format(config.app.USER_NAME, config.app.UWSGI_LOG_PATH))
+    uwsgi_logrotate_file_path = "/etc/logrotate.d/{0}-uwsgi".format(config.app.APP_NAME)
+    require.file(uwsgi_logrotate_file_path,
+                 use_sudo=True,
+                 contents="""{config.app.UWSGI_LOG_PATH} {{
+    rotate 10
+    daily
+    compress
+    missingok
+    create 640 {config.app.USER_NAME} {config.app.USER_NAME}
+    postrotate
+        supervisorctl restart {config.app.APP_NAME}
+    endscript
+ }}""".format(config=config))
+
+    # we both call logrotate and "touch" the log file. The former is for cases where the log already existed
+    # while the latter is for cases in which the log file did not exist before
+    sudo("logrotate -f {0}".format(uwsgi_logrotate_file_path))
+    sudo("touch {config.app.UWSGI_LOG_PATH} && chown {config.app.USER_NAME}:{config.app.USER_NAME} {config.app.UWSGI_LOG_PATH}".format(config=config))
 
     require.supervisor.process(config.app.APP_NAME,
                                command=("{config.app.DEPLOY_ROOT}/env/bin/uwsgi -b {config.app.UWSGI_BUFFER_SIZE} "
