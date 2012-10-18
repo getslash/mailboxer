@@ -69,7 +69,8 @@ def deploy():
 
     virtualenv_path = "{}/env".format(config.app.DEPLOY_ROOT)
     if not fabtools.files.is_dir(virtualenv_path):
-        _deploy_run_as_autoclave_user("virtualenv {}".format(virtualenv_path))
+        with cd("/tmp"): # virtualenv has a bug when running from /root
+            _deploy_run_as_autoclave_user("virtualenv --distribute {}".format(virtualenv_path))
     _deploy_run_as_autoclave_user("{0}/env/bin/pip install -r {0}/src/pip_requirements.txt".format(config.app.DEPLOY_ROOT))
 
     require.supervisor.process(config.app.APP_NAME,
