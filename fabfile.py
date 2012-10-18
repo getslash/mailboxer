@@ -70,8 +70,11 @@ def deploy():
             _deploy_run_as_autoclave_user("virtualenv --distribute {}".format(virtualenv_path))
         _deploy_run_as_autoclave_user("{0}/env/bin/pip install -r {0}/src/pip_requirements.txt".format(config.app.DEPLOY_ROOT))
 
+    sudo("touch {0}".format(config.app.UWSGI_LOG_PATH))
+    sudo("chown {0}:{0} {1}".format(config.app.USER_NAME, config.app.UWSGI_LOG_PATH))
+
     require.supervisor.process(config.app.APP_NAME,
-        command="{0}/env/bin/uwsgi --chmod-socket 666 -H {0}/env -w flask_app.app:app -s {1}".format(config.app.DEPLOY_ROOT, config.app.UWSGI_UNIX_SOCK_PATH),
+        command="{0}/env/bin/uwsgi --chmod-socket 666 -H {0}/env -w flask_app.app:app -s {1}  --logto={2}".format(config.app.DEPLOY_ROOT, config.app.UWSGI_UNIX_SOCK_PATH, config.app.UWSGI_LOG_PATH),
         directory=config.app.DEPLOY_SRC_ROOT,
         user=config.app.USER_NAME,
         )
