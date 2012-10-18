@@ -38,6 +38,8 @@ To deploy your app, just run `fab deploy`:
 
    fab deploy -H your_host -u root -p yourpassword
 
+**NOTE**: you'll need to have `fabtools` installed to run the fabric file. It is automatically installed in the debug steps above, but necessary if you skip them.
+
 What's Inside?
 ==============
 
