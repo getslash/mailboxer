@@ -65,10 +65,10 @@ def deploy():
     _deploy_sync_project()
 
     virtualenv_path = "{}/env".format(config.app.DEPLOY_ROOT)
-    if not fabtools.files.is_dir(virtualenv_path):
-        with cd("/tmp"): # virtualenv has a bug when running from /root
+    with cd("/tmp"): # various commands might fail saving data to /root...
+        if not fabtools.files.is_dir(virtualenv_path):
             _deploy_run_as_autoclave_user("virtualenv --distribute {}".format(virtualenv_path))
-    _deploy_run_as_autoclave_user("{0}/env/bin/pip install -r {0}/src/pip_requirements.txt".format(config.app.DEPLOY_ROOT))
+        _deploy_run_as_autoclave_user("{0}/env/bin/pip install -r {0}/src/pip_requirements.txt".format(config.app.DEPLOY_ROOT))
 
     require.supervisor.process(config.app.APP_NAME,
         command="{0}/env/bin/uwsgi --chmod-socket 666 -H {0}/env -w flask_app.app:app -s {1}".format(config.app.DEPLOY_ROOT, config.app.UWSGI_UNIX_SOCK_PATH),
