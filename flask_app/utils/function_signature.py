@@ -15,7 +15,7 @@ class MissingArgumentType(SignatureException):
 class UnknownArgumentsException(SignatureException):
     pass
 
-def get_api_function_signature(func, argtypes):
+def get_function_signature(func, argtypes):
     argtypes = dict(argtypes)
     argspec = inspect.getargspec(func)
     untyped = set(argspec.args) - set(argtypes)
