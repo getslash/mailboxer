@@ -1,35 +1,10 @@
 {% extends "layout.html" %}
 
 {% block body %}
-<div class="container">
-  <div class="row">
-    <div class="span12">
-      <h1>Autoclave</h1> /ˈɔtəˌkleɪv/
-      <blockquote>
-A strong, pressurized, heated vessel, as for laboratory experiments, sterilization, cooking or mineral processing.
-      </blockquote>
-    </div>
+<header>
+  <div class="hero-unit">
+    <h1>Autoclave</h1>
+    <h4><a href="http://vmalloc.github.com/autoclave">http://vmalloc.github.com/autoclave</a></h4>
   </div>
-  <center><h2>Self Test</h2></center>
-  <div class="row">
-    <div class="span6">
-      <h3>Notifications</h3>
-      <div class="example">
-        <pre>app.notify_success("Notifications are working");</pre>
-      </div>
-    </div>
-    <div class="span6">
-  </div>
-</div>
-{% endblock %}
-
-{% block script %}
-$(function() {
-  $(".example").each(function() {
-     var code = $(this).find("pre").text();
-     var button = $('<button class="btn">Test</button>');
-     button.appendTo($(this));
-     button.click(function() {eval(code)});
-  });
-});
+</header>
 {% endblock %}
