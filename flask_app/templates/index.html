@@ -1,20 +1,25 @@
 {% extends "layout.html" %}
 
 {% block body %}
+
 <div class="container-fluid">
-  <h1>Active Mailboxes</h1>
+  <div class="hero-unit">
+    <h1>Welcome to Mailboxer!</h1>
+  </div>
 {% if summary.mailboxes %}
+  <h3>Active Mailboxes</h3>
   <table class="table" id="mailboxes">
    {% for mailbox in summary.mailboxes %}
     <tr><td>{{mailbox.name}}</td><td>{{mailbox.num_messages}} messages</td></tr>
    {% endfor %}
   </table>
 {% else %}
-  <div class="hero-unit">
-    <h1>Welcome to Mailboxer!</h1>
-  </div>
   <h3>There are currently no defined mailboxes</h3>
-  <div class="span12">
+{% endif %}
+  <div style="text-align: center">
+    <button class="btn" id="show-hide-help">Show/hide help</button>
+  </div>
+  <div class="span12" id="help" style="display:none">
   To create a new mailbox:
 
     <pre>curl -X POST http://{{host}}/mailboxes/ -F name=myuser@somedomain.com</pre>
@@ -25,7 +30,7 @@ This will start storing incoming emails for myuser@somedomain.com. To get these 
 
 To delete a mailbox:
 
-    <pre>curl -X DELETE http://{{host}}/mailboxes/myuser@somedomain.com/</pre>
+    <pre>curl -X DELETE http://{{host}}/mailboxes/myuser@somedomain.com</pre>
 
 To delete all mailboxes:
 
@@ -40,6 +45,17 @@ Or you can get only *unread* messages:
     <pre>curl http://{{host}}/messages/myuser@somedomain.com/unread</pre>
   </div>
 </div>
-{% endif %}
 
+{% endblock %}
+
+{% block script %}
+$(function() {
+  $("#show-hide-help").click(function() {
+    $(this).toggleClass("btn-info");
+    $("#help").fadeToggle();
+  });
+  {% if not summary.mailboxes %}
+  $("#show-hide-help").click();
+  {% endif %}
+});
 {% endblock %}
