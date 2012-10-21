@@ -34,6 +34,8 @@ def param_request_handler(**argtypes):
         @functools.wraps(func)
         def new_func():
             args = flask.request.json
+            if args is None:
+                args = {k : flask.request.form[k][0] for k, v in flask.request.form.iteritems()}
             _normalize_args(args, signature)
             return func(**args)
         return new_func
