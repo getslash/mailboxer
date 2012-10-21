@@ -12,8 +12,6 @@ UWSGI_BUFFER_SIZE            = 16 * 1024
 
 REQUIRE_LOGIN                = True
 
-API_ROOT                     = "/api"
-
 CELERY_WORKER_SERVICE_NAME   = APP_NAME + "-celery"
 
 DATA_ROOT                    = "/data"

@@ -2,17 +2,10 @@ import flask
 from flask.ext.openid import OpenID
 from . import config
 from . import auth
-from .api import api
 from .utils import render_template
 
 app = flask.Flask(__name__)
 app.config.update(config.flask.__dict__)
-
-@api.api_handler("/example_sum", a=int, b=int)
-def sum(a, b):
-    return a + b
-
-app.register_blueprint(api.api_blueprint, url_prefix=config.app.API_ROOT)
 
 oid = OpenID(app)
 
