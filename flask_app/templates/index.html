@@ -14,7 +14,7 @@
    {% endfor %}
   </table>
 {% else %}
-  <h3>There are currently no defined mailboxes</h3>
+  <h3>There are currently no mailboxes defined.</h3>
 {% endif %}
   <div style="text-align: center">
     <button class="btn" id="show-hide-help">Show/hide help</button>
@@ -55,7 +55,8 @@ $(function() {
     $("#help").fadeToggle();
   });
   {% if not summary.mailboxes %}
-  $("#show-hide-help").click();
+  setTimeout('$("#show-hide-help").click()', 1000);
+
   {% endif %}
 });
 {% endblock %}
