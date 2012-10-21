@@ -64,7 +64,7 @@ def get_summary_page():
         mailbox = {"name" : mailbox["name"],
                    "num_messages" : get_message_collection().find({"mailbox_name" : mailbox["name"]}).count()}
         mailboxes.append(mailbox)
-    return render_template("index.html", summary=summary)
+    return render_template("index.html", summary=summary, host=request.headers["HOST"])
 
 def _check_request_data(*fields):
     data = request.json

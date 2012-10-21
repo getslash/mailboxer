@@ -2,12 +2,44 @@
 
 {% block body %}
 <div class="container-fluid">
-<span style="font-size: 24px">Active Mailboxes</span>
-<button class="btn btn-danger" onclick="app.delete_all_messages().success(function() {$('#mailboxes td').fadeOut(function() {$(this).remove();});}); return false">Delete all</button>
+  <h1>Active Mailboxes</h1>
+{% if summary.mailboxes %}
+  <table class="table" id="mailboxes">
+   {% for mailbox in summary.mailboxes %}
+    <tr><td>{{mailbox.name}}</td><td>{{mailbox.num_messages}} messages</td></tr>
+   {% endfor %}
+  </table>
+{% else %}
+  <div class="hero-unit">
+    <h1>Welcome to Mailboxer!</h1>
+  </div>
+  <h3>There are currently no defined mailboxes</h3>
+  <div class="span12">
+  To create a new mailbox:
+
+    <pre>curl -X POST http://{{host}}/mailboxes/ -F name=myuser@somedomain.com</pre>
+
+This will start storing incoming emails for myuser@somedomain.com. To get these emails:
+
+    <pre>curl http://{{host}}/messages/myuser@somedomain.com</pre>
+
+To delete a mailbox:
+
+    <pre>curl -X DELETE http://{{host}}/mailboxes/myuser@somedomain.com/</pre>
+
+To delete all mailboxes:
+
+    <pre>curl -X DELETE "http://{{host}}/mailboxes/*"</pre>
+
+To get all messages in an inbox:
+
+    <pre>curl http://{{host}}/messages/myuser@somedomain.com</pre>
+
+Or you can get only *unread* messages:
+
+    <pre>curl http://{{host}}/messages/myuser@somedomain.com/unread</pre>
+  </div>
 </div>
-<table class="table" id="mailboxes">
-{% for mailbox in summary.mailboxes %}
-<tr><td>{{mailbox.name}}</td><td>{{mailbox.num_messages}} messages</td></tr>
-{% endfor %}
-</table>
+{% endif %}
+
 {% endblock %}
