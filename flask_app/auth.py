@@ -1,4 +1,5 @@
 import flask
+from . import config
 
 def authenticate_from_openid_response(resp):
     print "authenticating!"
@@ -17,6 +18,8 @@ def _get_user_attribute(attr):
     return auth_info.get(attr, None)
 
 def is_authenticated():
+    if config.app.REQUIRE_LOGIN:
+        return True
     auth_info = flask.session.get("auth_info")
     if auth_info is None:
         return False

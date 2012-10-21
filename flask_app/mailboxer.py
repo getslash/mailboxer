@@ -11,18 +11,18 @@ from .db import (
     get_message_collection,
     )
 from . import messages
-from .utils import returns_json
+from .utils import returns_json_response
 from .utils import render_template
 
 blueprint = Blueprint("mail", __name__)
 
 @blueprint.route("/mailboxes/")
-@returns_json
+@returns_json_response
 def get_all_mailboxes():
     return [{"name" : m["name"]} for m in get_mailbox_collection().find()]
 
 @blueprint.route("/mailboxes/", methods=["POST"])
-@returns_json
+@returns_json_response
 def add_mailbox():
     data = _check_request_data("name")
     if "*" in data["name"]:
@@ -32,26 +32,26 @@ def add_mailbox():
     return dict(name=data["name"])
 
 @blueprint.route("/mailboxes/<mailbox_name>", methods=["DELETE"])
-@returns_json
+@returns_json_response
 def delete_mailbox(mailbox_name):
     get_mailbox_collection().remove({"name":mailbox_name})
     messages.delete_messages_by_mailbox(mailbox_name)
     return {}
 
 @blueprint.route("/mailboxes/*", methods=["DELETE"])
-@returns_json
+@returns_json_response
 def delete_all_mailboxes():
     get_mailbox_collection().remove()
     messages.delete_all_messages()
     return {}
 
 @blueprint.route("/messages/<mailbox_name>")
-@returns_json
+@returns_json_response
 def get_messages(mailbox_name):
     return messages.get_messages(mailbox_name)
 
 @blueprint.route("/messages/<mailbox_name>/unread")
-@returns_json
+@returns_json_response
 def get_unread_messages(mailbox_name):
     return messages.get_messages(mailbox_name, include_read=False)
 
