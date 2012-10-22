@@ -1,10 +1,21 @@
-import pymongo
+import mongokit
 from . import config
 
-_connection = None
+_connection = mongokit.Connection(config.app.DATABASE_HOST, safe=True)
 
 def get_connection():
-    global _connection
-    if _connection is None:
-        _connection = pymongo.Connection(config.app.DATABASE_HOST, safe=True)
     return _connection
+
+#################################### models ####################################
+# @_connection.register
+# class User(mongokit.Document):
+#     structure = {
+#         "email" : unicode,
+#     }
+#     indexes = [
+#         {
+#             "fields" : ["email"],
+#             "unique" : True,
+#         }
+#     ]
+

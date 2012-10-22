@@ -5,6 +5,7 @@ flask
 Flask-OpenID
 gevent
 jinja2
+mongokit
 nose
 pymongo
 python-cjson

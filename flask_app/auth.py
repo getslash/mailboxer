@@ -1,8 +1,9 @@
 import flask
 from . import config
+from . import db
 
 def authenticate_from_openid_response(resp):
-    print "authenticating!"
+    flask.session["user"] = db.User.collection.update({"email" : resp.email})
     flask.session['auth_info'] = dict(
         openid = resp.identity_url,
         email = resp.email,
