@@ -1,14 +1,12 @@
-import mongokit
+from flask.ext.mongokit import MongoKit, Document
 from . import config
 
-_connection = mongokit.Connection(config.app.DATABASE_HOST, safe=True)
-
-def get_connection():
-    return _connection
+db = MongoKit()
 
 #################################### models ####################################
-# @_connection.register
+# @db.register
 # class User(mongokit.Document):
+#     __collection__ = "users"
 #     structure = {
 #         "email" : unicode,
 #     }
