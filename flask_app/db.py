@@ -1,11 +1,16 @@
-from flask.ext.mongokit import MongoKit, Document
+from flask.ext import mongokit as flask_mongokit
 from . import config
 
-db = MongoKit()
+class AutoclaveMongoKit(flask_mongokit.MongoKit):
+    def connect(self):
+        super(AutoclaveMongoKit, self).connect()
+        flask_mongokit.ctx_stack.top.mongokit_connection.safe = True
+
+db = AutoclaveMongoKit()
 
 #################################### models ####################################
 # @db.register
-# class User(mongokit.Document):
+# class User(flask_mongokit.Document):
 #     __collection__ = "users"
 #     structure = {
 #         "email" : unicode,
