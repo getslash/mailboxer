@@ -1,5 +1,6 @@
 import flask
 from flask.ext.openid import OpenID
+from flask.ext.gravatar import Gravatar
 from . import auth
 from . import config
 from . import db
@@ -10,12 +11,17 @@ app.config.update(config.flask.__dict__)
 
 db.db.init_app(app)
 
+gravatar = Gravatar(app,
+                    size=24,
+                    rating='g',
+                    default='retro',
+                    force_default=False,
+                    force_lower=False)
+
 oid = OpenID(app)
 
 @app.route("/")
 def index():
-    if not auth.is_authenticated():
-        return flask.redirect("/login")
     return render_template("index.html")
 
 @app.route('/login')
@@ -30,6 +36,12 @@ def login():
         return flask.redirect(oid.get_next_url())
     return oid.try_login("https://www.google.com/accounts/o8/id", 
                          ask_for=['email', 'fullname', 'nickname'])
+
+@app.route("/logout")
+def logout():
+    if auth.is_authenticated():
+        auth.deauthenticate()
+    return flask.redirect(oid.get_next_url())
 
 @oid.after_login
 def create_or_login(resp):

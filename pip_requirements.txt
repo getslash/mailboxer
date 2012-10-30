@@ -6,6 +6,7 @@ Flask-OpenID
 gevent
 jinja2
 Flask-MongoKit
+flask-gravatar
 nose
 pymongo
 python-cjson

@@ -20,9 +20,26 @@
   <body>
   <div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
-      <a class="brand" href="#">Autoclave</a>
-      <ul class="nav">
-      </ul>
+      <div class="container" style="width:90%">
+        <a class="brand" href="#">Autoclave</a>
+        <ul class="nav">
+        </ul>
+        <div class="pull-right">
+        <form action="/{% if session.user %}logout{%else%}login{%endif%}" method="get">
+            <input type="hidden" name="next" value="{{request.path}}"/>
+        {% if session.user %}
+            <button id="logout-button" class="btn btn-info" type="submit" title="logged in as {{session.user.email}}">
+              <img src="{{session.user.email | gravatar}}"/>
+            Logout
+            </button>
+        {% else %}
+            <button class="btn btn-inverse" type="submit">
+          Login
+            </button>
+        {% endif %}
+          </form>
+        </div>
+      </div>
     </div>
   </div>
    {% block body %}

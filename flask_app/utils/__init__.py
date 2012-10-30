@@ -4,7 +4,9 @@ import functools
 from .function_signature import get_function_signature
 
 def render_template(template, **kwargs):
-    return flask.render_template(template, request=flask.request, **kwargs)
+    return flask.render_template(template,
+                                 session=flask.session,
+                                 request=flask.request, **kwargs)
 
 def returns_json_response(func):
     @functools.wraps(func)
