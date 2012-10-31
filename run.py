@@ -5,6 +5,8 @@ import logging
 import os
 import sys
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "www"))
+
 from flask_app.app import app
 from config import config
 
