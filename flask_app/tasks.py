@@ -1,7 +1,7 @@
 from celery import Celery
-from .config import celery as celery_config
+from config import celeryconfig
 
-celery = Celery("tasks", broker=celery_config.BROKER_URL)
+celery = Celery("tasks", broker=celeryconfig.BROKER_URL)
 
 ## Add your tasks here, for instance
 # @celery.task

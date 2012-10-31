@@ -6,7 +6,7 @@ from fabric.api import *
 from fabric.contrib.project import rsync_project
 import fabtools
 from fabtools import require
-from flask_app import config
+from config import config
 import configuration_templates
 
 _PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -32,7 +32,7 @@ def debug():
         "{} {}/run.py -d".format(sys.executable, src_root),
         "mongod --auth --dbpath {}".format(_TESTING_MONGO_DB_PATH),
         "redis-server",
-        "cd {} && {} -l DEBUG -B --config=flask_app.config.celery".format(src_root, celeryd_executable),
+        "cd {} && {} -l DEBUG -B --config=config.celeryconfig".format(src_root, celeryd_executable),
         "rabbitmq-server",
         ]
     _run_tmux_session("autoclave-test", commands)
@@ -48,10 +48,9 @@ def deploy():
 
     _deploy_ensure_user()
     for directory in (
-            config.app.DEPLOY_ROOT,
-            config.app.DATA_ROOT,
-            config.app.REDIS_DB_PATH,
-            config.app.MONGO_DB_PATH,
+            config.deployment.root_path,
+            config.mongodb.db_path,
+            config.redis.db_path,
         ):
         _deploy_ensure_dir(directory)
 
@@ -64,11 +63,11 @@ def deploy():
 
     _deploy_sync_project()
 
-    virtualenv_path = "{}/env".format(config.app.DEPLOY_ROOT)
+    virtualenv_path = "{}/env".format(config.deployment.root_path)
     with cd("/tmp"): # various commands might fail saving data to /root...
         if not fabtools.files.is_dir(virtualenv_path):
             _deploy_run_as_autoclave_user("virtualenv --distribute {}".format(virtualenv_path))
-        _deploy_run_as_autoclave_user("{0}/env/bin/pip install -r {0}/src/pip_requirements.txt".format(config.app.DEPLOY_ROOT))
+        _deploy_run_as_autoclave_user("{0}/env/bin/pip install -r {0}/src/pip_requirements.txt".format(config.deployment.root_path))
 
     uwsgi_logrotate_file_path = "/etc/logrotate.d/{0}-uwsgi".format(config.app.APP_NAME)
     require.file(uwsgi_logrotate_file_path,
@@ -78,7 +77,7 @@ def deploy():
     daily
     compress
     missingok
-    create 640 {config.app.USER_NAME} {config.app.USER_NAME}
+    create 640 {config.deployment.user} {config.deployment.user}
     postrotate
         supervisorctl restart {config.app.APP_NAME}
     endscript
@@ -87,23 +86,23 @@ def deploy():
     # we both call logrotate and "touch" the log file. The former is for cases where the log already existed
     # while the latter is for cases in which the log file did not exist before
     sudo("logrotate -f {0}".format(uwsgi_logrotate_file_path))
-    sudo("touch {config.app.UWSGI_LOG_PATH} && chown {config.app.USER_NAME}:{config.app.GROUP_NAME} {config.app.UWSGI_LOG_PATH}".format(config=config))
+    sudo("touch {config.app.UWSGI_LOG_PATH} && chown {config.deployment.user}:{config.app.GROUP_NAME} {config.app.UWSGI_LOG_PATH}".format(config=config))
 
     require.supervisor.process(config.app.APP_NAME,
-                               command=("{config.app.DEPLOY_ROOT}/env/bin/uwsgi -b {config.app.UWSGI_BUFFER_SIZE} "
-                                       "--chmod-socket 666 -H {config.app.DEPLOY_ROOT}/env -w flask_app.app:app "
-                                       "-s {config.app.UWSGI_UNIX_SOCK_PATH} --logto={config.app.UWSGI_LOG_PATH}").format(config=config),
-                               directory=config.app.DEPLOY_SRC_ROOT,
-                               user=config.app.USER_NAME,
+                               command=("{config.deployment.root_path}/env/bin/uwsgi -b {config.app.UWSGI_BUFFER_SIZE} "
+                                       "--chmod-socket 666 -H {config.deployment.root_path}/env -w flask_app.app:app "
+                                       "-s {config.deployment.uwsgi.unix_socket_path} --logto={config.app.UWSGI_LOG_PATH}").format(config=config),
+                               directory=config.deployment.src_path,
+                               user=config.deployment.user,
                            )
 
     require.supervisor.process(config.app.CELERY_WORKER_SERVICE_NAME,
-        command="{0}/env/bin/celeryd -B --config=flask_app.config.celery".format(config.app.DEPLOY_ROOT),
-        directory=config.app.DEPLOY_SRC_ROOT,
-        user=config.app.USER_NAME,
+        command="{0}/env/bin/celeryd -B --config=flask_app.config.celery".format(config.deployment.root_path),
+        directory=config.deployment.src_path,
+        user=config.deployment.user,
         )
 
-    put(StringIO(_generate_production_nginx_configuration(config.app.DEPLOY_ROOT)), "/etc/nginx/nginx.conf", use_sudo=True)
+    put(StringIO(_generate_production_nginx_configuration(config.deployment.root_path)), "/etc/nginx/nginx.conf", use_sudo=True)
     fabtools.service.restart("nginx")
     _deploy_start_instance()
 
@@ -122,10 +121,10 @@ def _deploy_supervisord_action(action):
             sudo("supervisorctl {} {}".format(action, service))
 
 def _deploy_ensure_user():
-    require.user(config.app.USER_NAME)
+    require.user(config.deployment.user)
 def _deploy_ensure_dir(directory):
     require.directory(directory, use_sudo=True)
-    sudo("chown -R {config.app.USER_NAME}:{config.app.GROUP_NAME} {dir}".format(config=config, dir=directory))
+    sudo("chown -R {config.deployment.user}:{config.app.GROUP_NAME} {dir}".format(config=config, dir=directory))
 
 def _deploy_setup_redis():
     require.deb.packages(["redis-server"])
@@ -139,7 +138,7 @@ def _deploy_setup_mongo():
 dbpath = {}
 
 # Only accept local connections
-bind_ip = 127.0.0.1""".format(config.app.MONGO_DB_PATH)), "/etc/mongod.conf", use_sudo=True)
+bind_ip = 127.0.0.1""".format(config.mongodb.db_path)), "/etc/mongod.conf", use_sudo=True)
     fabtools.service.restart("mongodb")
 
 def _deploy_sync_project():
@@ -147,19 +146,19 @@ def _deploy_sync_project():
     rsync_project(local_dir=_PROJECT_PATH + "/",
                   remote_dir=tmp_dir,
                   delete=True, exclude=".git")
-    _deploy_run_as_autoclave_user("rsync -rv {}/ {}/".format(tmp_dir, config.app.DEPLOY_SRC_ROOT))
+    _deploy_run_as_autoclave_user("rsync -rv {}/ {}/".format(tmp_dir, config.deployment.src_path))
 
 def _deploy_run_as_autoclave_user(cmd):
-    sudo(cmd, user=config.app.USER_NAME)
+    sudo(cmd, user=config.deployment.user)
 
 def _generate_testing_nginx_configuration():
-    return configuration_templates.nginx.render(tcp_port=config.app.TESTING_FRONTEND_TCP_PORT,
-                                                static_root=config.app.STATIC_ROOT,
+    return configuration_templates.nginx.render(tcp_port=config.deployment.www.testing_frontend_port,
+                                                static_root=config.deployment.www.static_root,
                                                 daemon=False, config=config)
 def _generate_production_nginx_configuration(installation_root):
     return configuration_templates.nginx.render(tcp_port=80,
                                                 static_root="{}/src/flask_app/static".format(installation_root),
-                                                uwsgi_socket_path=config.app.UWSGI_UNIX_SOCK_PATH,
+                                                uwsgi_socket_path=config.deployment.uwsgi.unix_socket_path,
                                                 daemon=True, config=config)
 
 

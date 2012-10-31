@@ -6,7 +6,7 @@ import os
 import sys
 
 from flask_app.app import app
-from flask_app import config
+from config import config
 
 parser = argparse.ArgumentParser(usage="%(prog)s [options] args...")
 parser.add_argument("-d", "--debug", action="store_true", default=False)
@@ -15,9 +15,9 @@ parser.add_argument("-v", "--verbose", action="store_true", default=False)
 def main(args):
     from gevent.wsgi import WSGIServer
     if args.debug:
-        app.run(debug=True, port=config.app.TESTING_FRONTEND_TCP_PORT)
+        app.run(debug=True, port=config.deployment.www.testing_frontend_port)
     else:
-        http_server = WSGIServer(("0.0.0.0", config.app.APP_TCP_PORT), app)
+        http_server = WSGIServer(("0.0.0.0", config.deployment.www.production_frontend_port), app)
         http_server.serve_forever()
     return 0
 

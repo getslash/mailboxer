@@ -1,5 +1,4 @@
 from flask.ext import mongokit as flask_mongokit
-from . import config
 
 class AutoclaveMongoKit(flask_mongokit.MongoKit):
     def connect(self):

@@ -1,4 +1,5 @@
 celery
+confetti==1.0.0
 fabric
 fabtools
 flask

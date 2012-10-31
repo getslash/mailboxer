@@ -1,13 +1,16 @@
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
+from config import config
 import flask
 from flask.ext.openid import OpenID
 from flask.ext.gravatar import Gravatar
 from . import auth
-from . import config
 from . import db
 from .utils import render_template
 
 app = flask.Flask(__name__)
-app.config.update(config.flask.__dict__)
+app.config.update(SECRET_KEY = config.flask.secret_key)
 
 db.db.init_app(app)
 
