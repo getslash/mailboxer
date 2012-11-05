@@ -1,3 +1,4 @@
+import os
 import sys
 from fabric.api import *
 from fabric.contrib.project import rsync_project
@@ -7,9 +8,10 @@ from .parameters import LOCAL_PROJECT_ROOT
 from . import _templates
 
 def deploy_to_vagrant():
-    local("vagrant up")
-    with settings(user="vagrant", host_string="127.0.0.1", port=2222, key_filename="~/.vagrant.d/insecure_private_key"):
-        deploy_to_server()
+    with lcd(os.path.dirname(__file__)):
+        local("vagrant up")
+        with settings(user="vagrant", host_string="127.0.0.1", port=2222, key_filename="~/.vagrant.d/insecure_private_key"):
+            deploy_to_server()
 
 def deploy_to_server():
     _ensure_user()
