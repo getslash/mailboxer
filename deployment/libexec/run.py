@@ -5,7 +5,7 @@ import logging
 import os
 import sys
 
-from deploment import fix_paths
+from deployment import fix_paths
 
 from flask_app.app import app
 from config import config

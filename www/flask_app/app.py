@@ -9,7 +9,7 @@ from . import auth
 from . import db
 from .utils import render_template
 
-app = flask.Flask(__name__)
+app = flask.Flask(__name__, static_folder=os.path.join(fix_paths.PROJECT_ROOT, "www", "static"))
 app.config.update(SECRET_KEY = config.flask.secret_key)
 
 db.db.init_app(app)

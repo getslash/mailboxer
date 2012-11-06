@@ -15,7 +15,7 @@ def debug():
     _purge_previous_dirs()
 
     commands = [
-        "{} {}/run.py -d".format(sys.executable, LOCAL_PROJECT_ROOT),
+        "PYTHONPATH={0} {1} {0}/deployment/libexec/run.py -d".format(LOCAL_PROJECT_ROOT, sys.executable),
         "mongod --auth --dbpath {}".format(_TESTING_MONGO_DB_PATH),
         "redis-server",
         "cd {}/www && celeryd -l DEBUG -B --config=config.celeryconfig".format(LOCAL_PROJECT_ROOT),
