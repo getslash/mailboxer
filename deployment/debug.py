@@ -14,13 +14,15 @@ def debug():
     """
     _purge_previous_dirs()
 
-    commands = [
-        "PYTHONPATH={0} {1} {0}/deployment/libexec/run.py -d".format(LOCAL_PROJECT_ROOT, sys.executable),
-        "mongod --auth --dbpath {}".format(_TESTING_MONGO_DB_PATH),
-        "redis-server",
-        "cd {}/www && celeryd -l DEBUG -B --config=config.celeryconfig".format(LOCAL_PROJECT_ROOT),
-        "rabbitmq-server",
-    ]
+    commands = ["PYTHONPATH={0} {1} {0}/deployment/libexec/run.py -d".format(LOCAL_PROJECT_ROOT, sys.executable)]
+    if config.mongodb.enabled:
+        commands.append("mongod --auth --dbpath {}".format(_TESTING_MONGO_DB_PATH))
+    if config.redis.enabled:
+        commands.append("redis-server")
+    if config.rabbitmq.enabled:
+        commands.append("rabbitmq-server")
+    if config.celery.enabled:
+        commands.append("cd {}/www && celeryd -l DEBUG -B --config=config.celeryconfig".format(LOCAL_PROJECT_ROOT))
     run_tmux_session("{}-test".format(config.app.name), commands)
 
 def _purge_previous_dirs():
