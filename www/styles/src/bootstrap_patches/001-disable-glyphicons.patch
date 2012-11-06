@@ -1,0 +1,13 @@
+diff --git a/less/bootstrap.less b/less/bootstrap.less
+index 14bb3f0..35774f2 100644
+--- a/less/bootstrap.less
++++ b/less/bootstrap.less
+@@ -27,7 +27,7 @@
+ @import "tables.less";
+ 
+ // Components: common
+-@import "sprites.less";
++//@import "sprites.less";
+ @import "dropdowns.less";
+ @import "wells.less";
+ @import "component-animations.less";
