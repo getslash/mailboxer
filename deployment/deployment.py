@@ -144,6 +144,7 @@ def _deploy_uwsgi_service():
     fabtools.require.supervisor.process(
         config.app.name,
         command=("{config.deployment.virtualenv_path}/bin/uwsgi -b {config.deployment.uwsgi.buffer_size} "
+                 "--pythonpath={config.deployment.src_path} --pythonpath={config.deployment.www_path} "
                  "--chmod-socket 666 -H {config.deployment.root_path}/env -w flask_app.app:app "
                  "-s {config.deployment.uwsgi.unix_socket_path} --logto={config.deployment.uwsgi.log_path}").format(config=config),
         directory=config.deployment.www_path,
