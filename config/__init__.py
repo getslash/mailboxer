@@ -18,7 +18,6 @@ configobj = confetti.Config(dict(
     ),
     celery = dict(
         enabled = True,
-        worker_service_name = "{}-celery".format(APP_NAME),
         # the actual celery configuration is in config/celeryconfig.py
     ),
     flask = dict(
@@ -45,6 +44,10 @@ configobj = confetti.Config(dict(
         src_path  = os.path.join(DEPLOY_ROOT, "src"),
         www_path  = os.path.join(DEPLOY_ROOT, "src", "www"),
         static_root = os.path.join(DEPLOY_ROOT, "src", "www", "static"),
+        celeryd = dict(
+            service_name = "{}-celery".format(APP_NAME),
+            log_path = "/var/log/{}-celeryd.log".format(APP_NAME),
+        ),
         uwsgi = dict(
             unix_socket_path = "/tmp/__{}.sock".format(APP_NAME),
             log_path = "/var/log/{}-uwsgi.log".format(APP_NAME),

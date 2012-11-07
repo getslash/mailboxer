@@ -22,7 +22,7 @@ def debug():
     if config.rabbitmq.enabled:
         commands.append("rabbitmq-server")
     if config.celery.enabled:
-        commands.append("cd {}/www && celeryd -l DEBUG -B --config=config.celeryconfig".format(LOCAL_PROJECT_ROOT))
+        commands.append("cd {0}/www && PYTHONPATH={0} celeryd -l DEBUG -B --config=config.celeryconfig".format(LOCAL_PROJECT_ROOT))
     run_tmux_session("{}-test".format(config.app.name), commands)
 
 def _purge_previous_dirs():

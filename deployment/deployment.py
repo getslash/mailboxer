@@ -68,9 +68,13 @@ def _deploy_flask_app():
     _start_flask_app()
 
 def _deploy_celeryd():
+    _setup_log_rotation(
+        config.deployment.celeryd.log_path,
+        config.deployment.celeryd.service_name,
+    )
     fabtools.require.supervisor.process(
-        config.celery.worker_service_name,
-        command="{0}/bin/celeryd -B --config=flask_app.config.celery".format(config.deployment.virtualenv_path),
+        config.deployment.celeryd.service_name,
+        command="{0}/bin/celeryd --logfile={1} -B --config=flask_app.config.celery".format(config.deployment.virtualenv_path, config.deployment.celeryd.log_path),
         directory=config.deployment.www_path,
         user=config.deployment.user,
         )
@@ -100,10 +104,12 @@ def _start_flask_app():
     _flask_app_service_action("start")
 
 def _flask_app_service_action(action):
-    for service in (
-            config.deployment.service_name,
-            config.celery.worker_service_name,
-        ):
+    services = [
+        config.deployment.service_name,
+    ]
+    if config.celery.enabled:
+        services.append(config.deployment.celeryd.service_name)
+    for service in services:
         with settings(warn_only=True):
             sudo("supervisorctl {} {}".format(action, service))
 
