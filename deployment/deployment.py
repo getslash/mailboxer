@@ -166,8 +166,8 @@ def _ensure_directory(directory):
     sudo("chown -R {config.deployment.user}:{config.deployment.group} {dir}".format(config=config, dir=directory))
 
 def _setup_log_rotation(log_path, service_name):
-    uwsgi_logrotate_file_path = "/etc/logrotate.d/{0}".format(service_name)
-    fabtools.require.file(uwsgi_logrotate_file_path,
+    logrotate_conf_file_path = "/etc/logrotate.d/{0}".format(service_name)
+    fabtools.require.file(logrotate_conf_file_path,
                  use_sudo=True,
                  contents="""\
 {log_path} {{
@@ -184,6 +184,6 @@ def _setup_log_rotation(log_path, service_name):
     # we both call logrotate and "touch" the log file. The former is for cases where the log already existed
     # while the latter is for cases in which the log file did not exist before
     sudo("touch {log_path} && chown {config.deployment.user}:{config.deployment.group} {log_path}".format(config=config, log_path=log_path))
-    sudo("logrotate -f {0}".format(log_path))
+    sudo("logrotate -f {0}".format(logrotate_conf_file_path))
 
 ################################################################################
