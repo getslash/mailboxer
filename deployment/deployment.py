@@ -132,8 +132,9 @@ def _deploy_sync_project_source():
     tmp_dir = "/tmp/__autoclave_project_sync"
     rsync_project(local_dir= LOCAL_PROJECT_ROOT + "/",
                   remote_dir=tmp_dir,
-                  delete=True, exclude=".git")
+                  delete=True, exclude=[".git", "*.pyc"])
     _run_as_app_user("rsync -rv {}/ {}/".format(tmp_dir, config.deployment.src_path))
+    _run_as_app_user("find {} -name '*.pyc' -delete".format(config.deployment.src_path))
 
 def _deploy_install_app_requirements():
     with cd("/tmp"):
