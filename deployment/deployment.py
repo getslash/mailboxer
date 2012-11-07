@@ -75,7 +75,7 @@ def _deploy_celeryd():
     fabtools.require.supervisor.process(
         config.deployment.celeryd.service_name,
         command="{0}/bin/celeryd --logfile={1} -B --config=flask_app.config.celery".format(config.deployment.virtualenv_path, config.deployment.celeryd.log_path),
-        directory=config.deployment.www_path,
+        environment="PYTHONPATH={0}".format(":".join([config.deployment.www_path, config.deployment.src_path])),
         user=config.deployment.user,
         )
 
