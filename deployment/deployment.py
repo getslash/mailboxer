@@ -158,10 +158,6 @@ def _deploy_install_app_requirements():
                 config.deployment.src_path))
 
 def _deploy_uwsgi_service():
-    _setup_log_rotation(
-        config.deployment.uwsgi.log_path,
-        config.deployment.service_name)
-
     fabtools.require.supervisor.process(
         config.app.name,
         command=("{config.deployment.virtualenv_path}/bin/uwsgi -b {config.deployment.uwsgi.buffer_size} "
@@ -171,6 +167,10 @@ def _deploy_uwsgi_service():
         directory=config.deployment.www_path,
         user=config.deployment.user,
     )
+    _setup_log_rotation(
+        config.deployment.uwsgi.log_path,
+        config.deployment.service_name)
+
 
 ################################ Misc. utilities ###############################
 
