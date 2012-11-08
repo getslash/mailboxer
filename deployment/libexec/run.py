@@ -7,8 +7,9 @@ import sys
 
 from deployment import fix_paths
 
-from flask_app.app import app
 from config import config
+
+from flask_app.app import app
 
 parser = argparse.ArgumentParser(usage="%(prog)s [options] args...")
 parser.add_argument("-d", "--debug", action="store_true", default=False)
@@ -17,6 +18,7 @@ parser.add_argument("-v", "--verbose", action="store_true", default=False)
 def main(args):
     from gevent.wsgi import WSGIServer
     if args.debug:
+        app.config["SECRET_KEY"] = "debug-secret-key"
         app.run(debug=True, port=config.deployment.www.testing_frontend_port)
     else:
         http_server = WSGIServer(("0.0.0.0", config.deployment.www.production_frontend_port), app)

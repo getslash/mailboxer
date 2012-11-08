@@ -21,7 +21,7 @@ configobj = confetti.Config(dict(
         # the actual celery configuration is in config/celeryconfig.py
     ),
     flask = dict(
-        secret_key = "4hx852m730e0kdTHEeJRQClVuu5kcqk9UxJ4xavI",
+        secret_key = "",
     ),
     mongodb = dict(
         enabled = True,
@@ -61,3 +61,8 @@ configobj = confetti.Config(dict(
 ))
 
 config = configobj.root
+
+_overlay_filename = os.path.join(os.path.dirname(__file__), "..", "..", "config_overlay.py")
+if os.path.exists(_overlay_filename):
+    with open(_overlay_filename) as _overlay_file:
+        exec(_overlay_file, dict(config=config))

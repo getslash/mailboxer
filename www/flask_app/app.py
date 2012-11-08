@@ -10,7 +10,12 @@ from . import db
 from .utils import render_template
 
 app = flask.Flask(__name__, static_folder=os.path.join(fix_paths.PROJECT_ROOT, "www", "static"))
-app.config.update(SECRET_KEY = config.flask.secret_key)
+app.config["SECRET_KEY"] = config.flask.secret_key
+
+@app.before_first_request
+def _check_secret_key():
+    if not app.config["SECRET_KEY"]:
+        raise RuntimeError("No secret key configured!")
 
 db.db.init_app(app)
 

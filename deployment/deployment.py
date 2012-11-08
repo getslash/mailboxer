@@ -1,5 +1,8 @@
 import os
+import random
+import string
 import sys
+from StringIO import StringIO
 from fabric.api import *
 from fabric.contrib.project import rsync_project
 import fabtools
@@ -63,6 +66,7 @@ def _deploy_flask_app():
     _deploy_app_virtualenv()
     _deploy_gevent_requirements()
     _deploy_sync_project_source()
+    _deploy_configure_site()
     _deploy_install_app_requirements()
     _deploy_uwsgi_service()
     _start_flask_app()
@@ -136,6 +140,15 @@ def _deploy_sync_project_source():
                   delete=True, exclude=[".git", "*.pyc"])
     _run_as_app_user("rsync -rv {}/ {}/".format(tmp_dir, config.deployment.src_path))
     _run_as_app_user("find {} -name '*.pyc' -delete".format(config.deployment.src_path))
+
+def _deploy_configure_site():
+    overrides_filename = os.path.join(config.deployment.root_path, "config_overlay.py")
+    if not fabtools.files.is_file(overrides_filename):
+        secret_key = _generate_secret_key()
+        put(StringIO("config.flask.secret_key={!r}".format(secret_key)), overrides_filename, use_sudo=True)
+
+def _generate_secret_key():
+    return "".join([random.choice(string.ascii_letters) for i in range(50)])
 
 def _deploy_install_app_requirements():
     with cd("/tmp"):
