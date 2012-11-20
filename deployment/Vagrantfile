@@ -4,7 +4,7 @@
 Vagrant::Config.run do |config|
   config.vm.define :server do |config|
     config.vm.box = "autoclave_precise64"
-    config.vm.box_url = "http://rotemy.com/vagrant/autoclave_precise64.box"
+    config.vm.box_url = "https://s3-eu-west-1.amazonaws.com/autoclave/autoclave_precise64.box"
     config.vm.host_name = "server"
     config.vm.forward_port 80, 8080
   end
