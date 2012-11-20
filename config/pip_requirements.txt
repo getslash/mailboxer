@@ -12,4 +12,5 @@ nose
 pymongo
 python-cjson
 redis
+requests
 uwsgi

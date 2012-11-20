@@ -27,6 +27,7 @@ def deploy_to_server():
     _deploy_flask_app()
     if config.celery.enabled:
         _deploy_celeryd()
+    _deploy_smtpd()
     _deploy_nginx()
 
 def _ensure_user():
@@ -83,6 +84,15 @@ def _deploy_celeryd():
         user=config.deployment.user,
         directory="/tmp",
         )
+
+def _deploy_smtpd():
+     require.supervisor.process(config.deployment.smtpd_service_name,
+                command="{0}/bin/python {1}/mailboxer_smtpd.py".format(
+                    config.deployment.virtualenv_path,
+                    config.deployment.src_path
+                    ),
+                user="root"
+     )
 
 def _deploy_nginx():
     fabtools.require.deb.packages(["nginx"])

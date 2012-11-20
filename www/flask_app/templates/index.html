@@ -1,10 +1,62 @@
 {% extends "layout.html" %}
 
 {% block body %}
-<header>
+
+<div class="container-fluid">
   <div class="hero-unit">
-    <h1>Autoclave</h1>
-    <h4><a href="http://vmalloc.github.com/autoclave">http://vmalloc.github.com/autoclave</a></h4>
+    <h1>Welcome to Mailboxer!</h1>
   </div>
-</header>
+{% if summary.mailboxes %}
+  <h3>Active Mailboxes</h3>
+  <table class="table" id="mailboxes">
+   {% for mailbox in summary.mailboxes %}
+    <tr><td>{{mailbox.name}}</td><td>{{mailbox.num_messages}} messages</td></tr>
+   {% endfor %}
+  </table>
+{% else %}
+  <h3>There are currently no mailboxes defined.</h3>
+{% endif %}
+  <div style="text-align: center">
+    <button class="btn" id="show-hide-help">Show/hide help</button>
+  </div>
+  <div class="span12" id="help" style="display:none">
+  To create a new mailbox:
+
+    <pre>curl -X POST http://{{host}}/mailboxes/ -F name=myuser@somedomain.com</pre>
+
+This will start storing incoming emails for myuser@somedomain.com. To get these emails:
+
+    <pre>curl http://{{host}}/messages/myuser@somedomain.com</pre>
+
+To delete a mailbox:
+
+    <pre>curl -X DELETE http://{{host}}/mailboxes/myuser@somedomain.com</pre>
+
+To delete all mailboxes:
+
+    <pre>curl -X DELETE "http://{{host}}/mailboxes/*"</pre>
+
+To get all messages in an inbox:
+
+    <pre>curl http://{{host}}/messages/myuser@somedomain.com</pre>
+
+Or you can get only *unread* messages:
+
+    <pre>curl http://{{host}}/messages/myuser@somedomain.com/unread</pre>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+$(function() {
+  $("#show-hide-help").click(function() {
+    $(this).toggleClass("btn-info");
+    $("#help").fadeToggle();
+  });
+  {% if not summary.mailboxes %}
+  setTimeout('$("#show-hide-help").click()', 1000);
+
+  {% endif %}
+});
 {% endblock %}

@@ -6,7 +6,7 @@ import flask
 from flask.ext.openid import OpenID
 from flask.ext.gravatar import Gravatar
 from . import auth
-from . import db
+from . import mailboxer
 from .utils import render_template
 
 app = flask.Flask(__name__, static_folder=os.path.join(fix_paths.PROJECT_ROOT, "www", "static"))
@@ -16,8 +16,6 @@ app.config["SECRET_KEY"] = config.flask.secret_key
 def _check_secret_key():
     if not app.config["SECRET_KEY"]:
         raise RuntimeError("No secret key configured!")
-
-db.db.init_app(app)
 
 gravatar = Gravatar(app,
                     size=24,
@@ -30,7 +28,9 @@ oid = OpenID(app)
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    if not auth.is_authenticated():
+        return flask.redirect("/login")
+    return flask.redirect("/summary")
 
 @app.route('/login')
 @oid.loginhandler
@@ -55,3 +55,7 @@ def logout():
 def create_or_login(resp):
     auth.authenticate_from_openid_response(resp)
     return flask.redirect(oid.get_next_url())
+
+from .mailboxer import blueprint as mailboxer_blueprint
+
+app.register_blueprint(mailboxer_blueprint)

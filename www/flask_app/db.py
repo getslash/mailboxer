@@ -1,23 +1,29 @@
-from flask.ext import mongokit as flask_mongokit
+import pymongo
+import gridfs
 
-class AutoclaveMongoKit(flask_mongokit.MongoKit):
-    def connect(self):
-        super(AutoclaveMongoKit, self).connect()
-        flask_mongokit.ctx_stack.top.mongokit_connection.safe = True
+_connection = None
 
-db = AutoclaveMongoKit()
+def get_connection():
+    global _connection
+    if _connection is None:
+        _connection = pymongo.Connection("127.0.0.1", safe=True)
+    return _connection
 
-#################################### models ####################################
-# @db.register
-# class User(flask_mongokit.Document):
-#     __collection__ = "users"
-#     structure = {
-#         "email" : unicode,
-#     }
-#     indexes = [
-#         {
-#             "fields" : ["email"],
-#             "unique" : True,
-#         }
-#     ]
+def get_mailbox_collection():
+    return get_db()["mailboxes"]
 
+def get_message_collection():
+    return get_db()["messages"]
+
+def get_db():
+    return get_connection()["mailboxer"]
+
+_MESSAGE_FS_NAME = "messages_fs"
+
+def get_message_fs():
+    return gridfs.GridFS(get_db(), _MESSAGE_FS_NAME)
+
+def get_message_fs_files_collection():
+    return get_db()["{}.files".format(_MESSAGE_FS_NAME)]
+def get_message_fs_chunks_collection():
+    return get_db()["{}.chunks".format(_MESSAGE_FS_NAME)]

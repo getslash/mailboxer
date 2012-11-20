@@ -40,6 +40,7 @@ configobj = confetti.Config(dict(
         group = APP_NAME,
         root_path = DEPLOY_ROOT,
         service_name = APP_NAME,
+        smtpd_service_name = APP_NAME + "_smtpd",
         virtualenv_path = os.path.join(DEPLOY_ROOT, "env"),
         src_path  = os.path.join(DEPLOY_ROOT, "src"),
         www_path  = os.path.join(DEPLOY_ROOT, "src", "www"),
