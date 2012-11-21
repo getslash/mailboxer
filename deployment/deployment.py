@@ -15,6 +15,9 @@ def deploy_to_vagrant():
         local("vagrant up")
         with settings(user="vagrant", host_string="127.0.0.1", port=2222, key_filename="~/.vagrant.d/insecure_private_key"):
             deploy_to_server()
+def vagrant(cmd):
+    with lcd(os.path.dirname(__file__)):
+        local("vagrant {0}".format(cmd))
 
 def deploy_to_server():
     _ensure_user()
@@ -33,29 +36,30 @@ def _ensure_user():
     fabtools.require.user(config.deployment.user, home="/home/{0}".format(config.deployment.user))
 
 def _deploy_redis():
-    _ensure_directory(config.redis.db_path)
+    _ensure_directory(config.redis.db_path, owner="redis", group="redis")
     fabtools.require.deb.packages(["redis-server"])
     fabtools.require.file(
-        "/etc/redis.conf",
-        contents="dir {}".format(config.redis.db_path),
+        "/etc/redis/redis.conf",
+        contents="""
+daemonize yes
+dir {config.redis.db_path}""".format(config=config),
         use_sudo=True,
     )
-    fabtools.service.start("redis-server")
-
+    fabtools.service.restart("redis-server")
 
 def _deploy_mongo():
-    _ensure_directory(config.mongodb.db_path)
+    _ensure_directory(config.mongodb.db_path, owner="mongodb", group="mongodb")
     fabtools.require.deb.packages(["mongodb"])
     fabtools.require.file(
-        "/etc/mongod.conf",
+        "/etc/mongodb.conf",
         contents="""
-# Store data in /usr/local/var/mongodb instead of the default /data/db
-dbpath = {}
+# Path to database
+dbpath = {config.mongodb.db_path}
 
 # Only accept local connections
-bind_ip = 127.0.0.1""".format(config.mongodb.db_path),
+bind_ip = 127.0.0.1""".format(config=config),
         use_sudo=True)
-    fabtools.service.start("mongodb")
+    fabtools.service.restart("mongodb")
 
 def _deploy_rabbitmq():
     fabtools.require.deb.packages(["rabbitmq-server"])
@@ -174,9 +178,12 @@ def _deploy_uwsgi_service():
 
 ################################ Misc. utilities ###############################
 
-def _ensure_directory(directory):
-    fabtools.require.directory(directory, use_sudo=True)
-    sudo("chown -R {config.deployment.user}:{config.deployment.group} {dir}".format(config=config, dir=directory))
+def _ensure_directory(directory, owner=None, group=None):
+    if owner is None:
+        owner = config.deployment.user
+    if group is None:
+        group = config.deployment.group
+    fabtools.require.directory(directory, use_sudo=True, owner=owner, group=group)
 
 def _setup_log_rotation(log_path, service_name):
     logrotate_conf_file_path = "/etc/logrotate.d/{0}".format(service_name)
