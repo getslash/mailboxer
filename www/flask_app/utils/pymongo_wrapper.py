@@ -1,6 +1,7 @@
 from functools import wraps
 from pymongo.helpers import AutoReconnect
 import time
+import types
 
 def wrap_pymongo_connection(conn, sleep=time.sleep):
     conn.safe = True
@@ -15,7 +16,7 @@ class AutoReconnectingConnection(object):
         if attr.startswith("_") or not hasattr(self._conn, attr):
             raise AttributeError(attr)
         value = getattr(self._conn, attr)
-        if hasattr(value, "__call__"):
+        if isinstance(value, types.FunctionType) or isinstance(value, types.MethodType):
             return _wrap_autoreconnect_method(value, self._sleep)
         return value
 

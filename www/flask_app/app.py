@@ -12,6 +12,8 @@ from .utils import render_template
 app = flask.Flask(__name__, static_folder=os.path.join(fix_paths.PROJECT_ROOT, "www", "static"))
 app.config["SECRET_KEY"] = config.flask.secret_key
 
+db.db.init_app(app)
+
 @app.before_first_request
 def _check_secret_key():
     if not app.config["SECRET_KEY"]:
