@@ -3,7 +3,7 @@ import confetti
 
 #### Edit here for basic customization
 # Application name, also used for multiple other customizations
-APP_NAME = "autoclave"
+APP_NAME = "mailboxer"
 DATA_ROOT = "/data"
 DEPLOY_ROOT = os.path.join("/opt", APP_NAME)
 
