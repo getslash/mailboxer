@@ -26,6 +26,12 @@ gravatar = Gravatar(app,
 
 oid = OpenID(app, config.deployment.openid.storage_path)
 
+if not app.debug:
+    import logging
+    from logging.handlers import WatchedFileHandler
+    file_handler = WatchedFileHandler("/tmp/mailboxer.log")
+    file_handler.setLevel(logging.WARNING)
+    app.logger.addHandler(file_handler)
 
 @app.route("/")
 def index():
