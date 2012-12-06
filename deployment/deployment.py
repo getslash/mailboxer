@@ -47,29 +47,30 @@ def _ensure_log_directories():
         _ensure_directory(log_directory)
 
 def _deploy_redis():
-    _ensure_directory(config.redis.db_path)
+    _ensure_directory(config.redis.db_path, owner="redis", group="redis")
     with _stopped_service_context("redis-server"):
         fabtools.require.deb.packages(["redis-server"])
         fabtools.require.file(
-            "/etc/redis.conf",
-            contents="dir {}".format(config.redis.db_path),
+            "/etc/redis/redis.conf",
+            contents="""
+daemonize yes
+dir {config.redis.db_path}""".format(config=config),
             use_sudo=True,
         )
 
 def _deploy_mongo():
-    _ensure_directory(config.mongodb.db_path)
+    _ensure_directory(config.mongodb.db_path, owner="mongodb", group="mongodb")
     fabtools.require.deb.packages(["mongodb"])
     with _stopped_service_context("mongodb"):
         fabtools.require.file(
-            "/etc/mongod.conf",
+            "/etc/mongodb.conf",
             contents="""
-# Store data in /usr/local/var/mongodb instead of the default /data/db
-dbpath = {}
+# Path to database
+dbpath = {config.mongodb.db_path}
 
 # Only accept local connections
-bind_ip = 127.0.0.1""".format(config.mongodb.db_path),
+bind_ip = 127.0.0.1""".format(config=config),
             use_sudo=True)
-
 @contextmanager
 def _stopped_service_context(service_name):
     if fabtools.service.is_running(service_name):
@@ -205,9 +206,12 @@ def _deploy_uwsgi_service():
 
 ################################ Misc. utilities ###############################
 
-def _ensure_directory(directory):
-    fabtools.require.directory(directory, use_sudo=True)
-    sudo("chown -R {config.deployment.user}:{config.deployment.group} {dir}".format(config=config, dir=directory))
+def _ensure_directory(directory, owner=None, group=None):
+    if owner is None:
+        owner = config.deployment.user
+    if group is None:
+        group = config.deployment.group
+    fabtools.require.directory(directory, use_sudo=True, owner=owner, group=group)
 
 def _setup_log_rotation(log_path, service_name):
     logrotate_conf_file_path = "/etc/logrotate.d/{0}".format(service_name)
