@@ -6,10 +6,10 @@ flask==0.9
 Flask-OpenID
 gevent
 jinja2
-Flask-MongoKit
+Flask-MongoKit==0.6
 flask-gravatar
 nose
-pymongo
+pymongo==2.3
 python-cjson
 redis
 requests

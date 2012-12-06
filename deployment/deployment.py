@@ -48,35 +48,33 @@ def _ensure_log_directories():
 
 def _deploy_redis():
     _ensure_directory(config.redis.db_path, owner="redis", group="redis")
-    with _stopped_service_context("redis-server"):
-        fabtools.require.deb.packages(["redis-server"])
-        fabtools.require.file(
-            "/etc/redis/redis.conf",
-            contents="""
+    fabtools.require.deb.packages(["redis-server"])
+    fabtools.require.file(
+        "/etc/redis/redis.conf",
+        contents="""
 daemonize yes
 dir {config.redis.db_path}""".format(config=config),
-            use_sudo=True,
-        )
+        use_sudo=True,
+    )
+    _restart_service("redis-server")
 
 def _deploy_mongo():
     _ensure_directory(config.mongodb.db_path, owner="mongodb", group="mongodb")
     fabtools.require.deb.packages(["mongodb"])
-    with _stopped_service_context("mongodb"):
-        fabtools.require.file(
-            "/etc/mongodb.conf",
-            contents="""
+    fabtools.require.file(
+        "/etc/mongodb.conf",
+        contents="""
 # Path to database
 dbpath = {config.mongodb.db_path}
 
 # Only accept local connections
 bind_ip = 127.0.0.1""".format(config=config),
-            use_sudo=True)
-@contextmanager
-def _stopped_service_context(service_name):
-    if fabtools.service.is_running(service_name):
-        with settings(warn_only=True):
-            fabtools.service.stop(service_name)
-    yield
+    use_sudo=True)
+    _restart_service("mongodb")
+
+def _restart_service(service_name):
+    with settings(warn_only=True):
+        fabtools.service.stop(service_name)
     fabtools.service.start(service_name)
 
 def _deploy_rabbitmq():
