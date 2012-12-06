@@ -44,6 +44,9 @@ configobj = confetti.Config(dict(
         src_path  = os.path.join(DEPLOY_ROOT, "src"),
         www_path  = os.path.join(DEPLOY_ROOT, "src", "www"),
         static_root = os.path.join(DEPLOY_ROOT, "src", "www", "static"),
+        openid = dict(
+            storage_path = os.path.join(DEPLOY_ROOT, "openid-storage"),
+        ),
         celeryd = dict(
             service_name = "{}-celery".format(APP_NAME),
             log_path = "/var/log/{}-celeryd.log".format(APP_NAME),
