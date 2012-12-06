@@ -173,10 +173,13 @@ def _generate_secret_key():
 
 def _deploy_install_app_requirements():
     with cd("/tmp"):
-        _run_as_app_user(
-            "{0}/bin/pip install -r {1}/config/pip_requirements.txt".format(
-                config.deployment.virtualenv_path,
-                config.deployment.src_path))
+        for reqs in ("base_requirements.txt", "app_requirements.txt"):
+            _run_as_app_user(
+                "{0}/bin/pip install -r {1}/config/{2}".format(
+                    config.deployment.virtualenv_path,
+                    config.deployment.src_path,
+                    reqs,
+                ))
 
 def _deploy_uwsgi_service():
     fabtools.require.supervisor.process(
