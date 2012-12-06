@@ -76,6 +76,7 @@ def _deploy_rabbitmq():
 def _deploy_flask_app():
     _stop_flask_app()
     _ensure_directory(config.deployment.root_path)
+    _ensure_directory(config.deployment.openid.storage_path)
     _deploy_app_virtualenv()
     _deploy_gevent_requirements()
     _deploy_sync_project_source()

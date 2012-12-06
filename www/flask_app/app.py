@@ -24,7 +24,8 @@ gravatar = Gravatar(app,
                     force_default=False,
                     force_lower=False)
 
-oid = OpenID(app)
+oid = OpenID(app, config.deployment.openid.storage_path)
+
 
 @app.route("/")
 def index():
