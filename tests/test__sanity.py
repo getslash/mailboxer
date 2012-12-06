@@ -48,8 +48,9 @@ class EmailTest(MailboxrTestBase):
     def test__send_receive_email(self):
         msg = "hello there\n\nbla!"
         self._send_email(msg)
-        [message] = self.get_all_messages()
-        self.assertEquals(str(message["message"]), msg)
+        for retry in range(3):
+            [message] = self.get_all_messages()
+            self.assertEquals(str(message["message"]), msg)
     def test__unread_messages(self):
         self._send_email("email")
         self.assertEquals(len(self.get_unread_messages()), 1)
