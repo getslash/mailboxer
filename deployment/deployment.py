@@ -1,14 +1,15 @@
+from . import _templates
+from .parameters import LOCAL_PROJECT_ROOT
+from StringIO import StringIO
+from config import config
+from contextlib import contextmanager
+from fabric.api import *
+from fabric.contrib.project import rsync_project
+import fabtools
 import os
 import random
 import string
 import sys
-from StringIO import StringIO
-from fabric.api import *
-from fabric.contrib.project import rsync_project
-import fabtools
-from config import config
-from .parameters import LOCAL_PROJECT_ROOT
-from . import _templates
 
 def deploy_to_vagrant():
     with lcd(os.path.dirname(__file__)):
@@ -45,7 +46,8 @@ daemonize yes
 dir {config.redis.db_path}""".format(config=config),
         use_sudo=True,
     )
-    fabtools.service.restart("redis-server")
+    _restart_service("redis-server")
+
 
 def _deploy_mongo():
     _ensure_directory(config.mongodb.db_path, owner="mongodb", group="mongodb")
@@ -59,7 +61,12 @@ dbpath = {config.mongodb.db_path}
 # Only accept local connections
 bind_ip = 127.0.0.1""".format(config=config),
         use_sudo=True)
-    fabtools.service.restart("mongodb")
+    _restart_service("mongodb")
+
+def _restart_service(service_name):
+    with settings(warn_only=True):
+        fabtools.service.stop(service_name)
+    fabtools.service.start(service_name)
 
 def _deploy_rabbitmq():
     fabtools.require.deb.packages(["rabbitmq-server"])
