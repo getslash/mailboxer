@@ -6,6 +6,7 @@ import confetti
 APP_NAME = "autoclave"
 DATA_ROOT = "/data"
 DEPLOY_ROOT = os.path.join("/opt", APP_NAME)
+LOG_ROOT = "/var/log/{}".format(APP_NAME)
 
 ################################################################################
 
@@ -47,13 +48,14 @@ configobj = confetti.Config(dict(
         openid = dict(
             storage_path = os.path.join(DEPLOY_ROOT, "openid-storage"),
         ),
+        log_path = os.path.join(LOG_ROOT, "app.log"),
         celeryd = dict(
             service_name = "{}-celery".format(APP_NAME),
-            log_path = "/var/log/{}-celeryd.log".format(APP_NAME),
+            log_path = os.path.join(LOG_ROOT, "celeryd.log"),
         ),
         uwsgi = dict(
             unix_socket_path = "/tmp/__{}.sock".format(APP_NAME),
-            log_path = "/var/log/{}-uwsgi.log".format(APP_NAME),
+            log_path = os.path.join(LOG_ROOT, "uwsgi.log"),
             buffer_size = 16 * 1024,
         ),
         www = dict(
