@@ -22,6 +22,7 @@ def vagrant(cmd):
 
 def deploy_to_server():
     _ensure_user()
+    _ensure_log_directories()
     if config.redis.enabled:
         _deploy_redis()
     if config.mongodb.enabled:
@@ -36,6 +37,14 @@ def deploy_to_server():
 
 def _ensure_user():
     fabtools.require.user(config.deployment.user, home="/home/{0}".format(config.deployment.user))
+
+def _ensure_log_directories():
+    for log_directory in set(os.path.dirname(x) for x in [
+            config.deployment.log_path,
+            config.deployment.uwsgi.log_path,
+            config.deployment.celeryd.log_path,
+    ]):
+        _ensure_directory(log_directory)
 
 def _deploy_redis():
     _ensure_directory(config.redis.db_path)
