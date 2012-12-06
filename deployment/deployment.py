@@ -76,8 +76,7 @@ def _stopped_service_context(service_name):
         with settings(warn_only=True):
             fabtools.service.stop(service_name)
     yield
-    if not fabtools.service.is_running(service_name):
-        fabtools.service.start(service_name)
+    fabtools.service.start(service_name)
 
 def _deploy_rabbitmq():
     fabtools.require.deb.packages(["rabbitmq-server"])
