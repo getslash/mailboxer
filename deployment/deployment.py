@@ -98,7 +98,7 @@ def _deploy_celeryd():
         )
 
 def _deploy_smtpd():
-     require.supervisor.process(config.deployment.smtpd_service_name,
+     fabtools.require.supervisor.process(config.deployment.smtpd_service_name,
                 command="{0}/bin/python {1}/mailboxer_smtpd.py".format(
                     config.deployment.virtualenv_path,
                     config.deployment.src_path
