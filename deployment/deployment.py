@@ -47,7 +47,7 @@ def _ensure_log_directories():
 
 def _deploy_redis():
     _ensure_directory(config.redis.db_path, owner="redis", group="redis")
-    fabtools.require.deb.packages(["redis-server"])
+    _install_apt(["redis-server"])
     fabtools.require.file(
         "/etc/redis/redis.conf",
         contents="""
@@ -57,10 +57,12 @@ dir {config.redis.db_path}""".format(config=config),
     )
     _restart_service("redis-server")
 
+def _install_apt(packages):
+    sudo('apt-get install -o Dpkg::Options::="--force-confold" --force-yes -y {0}'.format(" ".join(packages)))
 
 def _deploy_mongo():
     _ensure_directory(config.mongodb.db_path, owner="mongodb", group="mongodb")
-    fabtools.require.deb.packages(["mongodb"])
+    _install_apt(["mongodb"])
     fabtools.require.file(
         "/etc/mongodb.conf",
         contents="""
@@ -78,7 +80,7 @@ def _restart_service(service_name):
     fabtools.service.start(service_name)
 
 def _deploy_rabbitmq():
-    fabtools.require.deb.packages(["rabbitmq-server"])
+    _install_apt(["rabbitmq-server"])
 
 def _deploy_flask_app():
     _stop_flask_app()
@@ -106,7 +108,7 @@ def _deploy_celeryd():
         )
 
 def _deploy_nginx():
-    fabtools.require.deb.packages(["nginx"])
+    _install_apt(["nginx"])
     fabtools.require.file(
         "/etc/nginx/nginx.conf",
         contents=_deploy_nginx_configuration(),
@@ -143,14 +145,14 @@ def _run_as_app_user(cmd):
     sudo(cmd, user=config.deployment.user)
 
 def _deploy_app_virtualenv():
-    fabtools.require.deb.packages(["python-virtualenv"])
+    _install_apt(["python-virtualenv"])
     virtualenv_path = "{}/env".format(config.deployment.root_path)
     with cd("/tmp"): # various commands might fail saving data to /root...
         if not fabtools.files.is_dir(virtualenv_path):
             _run_as_app_user("virtualenv --distribute {}".format(virtualenv_path))
 
 def _deploy_gevent_requirements():
-    fabtools.require.deb.packages([
+    _install_apt([
         "libevent-dev", "python-dev", "build-essential"
     ])
 
