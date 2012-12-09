@@ -1,5 +1,7 @@
 import os
 import sys
+import logging
+from logging.handlers import WatchedFileHandler
 from deployment import fix_paths
 from config import config
 import flask
@@ -30,12 +32,12 @@ gravatar = Gravatar(app,
 
 oid = OpenID(app, config.deployment.openid.storage_path)
 
-if not app.debug:
-    import logging
-    from logging.handlers import WatchedFileHandler
-    file_handler = WatchedFileHandler(config.deployment.log_path)
-    file_handler.setLevel(logging.WARNING)
-    app.logger.addHandler(file_handler)
+@app.before_first_request
+def _setup_logging():
+    if not app.debug:
+        file_handler = WatchedFileHandler(config.deployment.log_path)
+        file_handler.setLevel(logging.WARNING)
+        app.logger.addHandler(file_handler)
 
 @app.route("/")
 def index():
