@@ -1,4 +1,5 @@
 import logging
+from bson import ObjectId
 from .db import (
     get_mailbox_collection,
     get_message_collection,
@@ -13,23 +14,24 @@ def process_message(peer, mailfrom, rcpttos, data):
     logging.debug("Processing message from %s", mailfrom)
     for rcptto in rcpttos:
         if mailboxes.find({"name":rcptto}).count() == 0:
+            logging.debug("Skipping recipient: %s", rcptto)
             continue
-        with get_message_fs().new_file() as message_file:
-            message_file.write(data)
-        _associate_file_with_mailbox(message_file, rcptto)
+        message_file_id = get_message_fs().put(data)
+        assert get_message_fs().get(message_file_id)
+        _associate_file_with_mailbox(message_file_id, rcptto)
         messages.save({
                 "mailbox_name":rcptto,
                 "mail_from" : mailfrom,
                 "sent_from" : peer,
                 "recipients" : rcpttos,
-                "file_id":message_file._id,
+                "file_id":message_file_id,
                 })
 
-def _associate_file_with_mailbox(message_file, mailbox_name):
-    get_message_fs_files_collection().update({"_id":message_file._id}, {"$set" : {"mailbox_name" : mailbox_name}}, multi=True)
-    get_message_fs_chunks_collection().update({"file_id":message_file._id}, {"$set" : {"mailbox_name" : mailbox_name}}, multi=True)
+def _associate_file_with_mailbox(message_file_id, mailbox_name):
+    get_message_fs_files_collection().update({"_id":message_file_id}, {"$set" : {"mailbox_name" : mailbox_name}}, multi=True)
+    get_message_fs_chunks_collection().update({"file_id":message_file_id}, {"$set" : {"mailbox_name" : mailbox_name}}, multi=True)
 def delete_messages_by_mailbox(mailbox_name):
-    for collection in (get_message_fs_chunks_collection(), get_message_fs_files_collection()):
+    for collection in (get_message_collection(), get_message_fs_chunks_collection(), get_message_fs_files_collection()):
         collection.remove({"mailbox_name" : mailbox_name})
 def delete_all_messages():
     for collection in (get_message_fs_chunks_collection(), get_message_fs_files_collection()):
@@ -43,7 +45,7 @@ def get_messages(mailbox_name, include_read=True):
         criteria.update({"read" : {"$ne" : True}})
     for message in get_message_collection().find(criteria):
         message_dict = dict(message)
-        message_dict["message"] = get_message_fs().get(message_dict.pop("file_id")).read()
+        message_dict["message"] = get_message_fs().get(ObjectId(message_dict.pop("file_id"))).read()
         returned_ids.append(message_dict.pop("_id"))
         returned.append(message_dict)
     get_message_collection().update({"_id" : {"$in" : returned_ids}}, {"$set" : {"read" : True}}, multi=True)
