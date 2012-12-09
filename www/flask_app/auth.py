@@ -21,6 +21,6 @@ def _get_user_attribute(attr):
     return auth_info.get(attr, None)
 
 def is_authenticated():
-    if not config.auth.REQUIRE_LOGIN:
+    if not config.auth.require_login:
         return True
     return "user" in flask.session

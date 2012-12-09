@@ -18,7 +18,8 @@ parser.add_argument("-v", "--verbose", action="store_true", default=False)
 def main(args):
     from gevent.wsgi import WSGIServer
     if args.debug:
-        app.config["SECRET_KEY"] = "debug-secret-key"
+        app.config["SECRET_KEY"] = "TESTING_SECRET_KEY"
+        config.deployment.openid.storage_path = "/tmp/__debug_openid_store"
         app.run(debug=True, port=config.deployment.www.testing_frontend_port)
     else:
         http_server = WSGIServer(("0.0.0.0", config.deployment.www.production_frontend_port), app)
