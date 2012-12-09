@@ -1,0 +1,4 @@
+confetti
+fabric
+fabtools
+jinja2
