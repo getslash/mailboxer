@@ -12,18 +12,12 @@ from config import config
 from flask_app.app import app
 
 parser = argparse.ArgumentParser(usage="%(prog)s [options] args...")
-parser.add_argument("-d", "--debug", action="store_true", default=False)
-parser.add_argument("-v", "--verbose", action="store_true", default=False)
 
 def main(args):
-    from gevent.wsgi import WSGIServer
-    if args.debug:
-        app.config["SECRET_KEY"] = "TESTING_SECRET_KEY"
-        config.deployment.openid.storage_path = "/tmp/__debug_openid_store"
-        app.run(debug=True, port=config.deployment.www.testing_frontend_port)
-    else:
-        http_server = WSGIServer(("0.0.0.0", config.deployment.www.production_frontend_port), app)
-        http_server.serve_forever()
+    _configure_logging()
+    app.config["SECRET_KEY"] = "TESTING_SECRET_KEY"
+    config.deployment.openid.storage_path = "/tmp/__debug_openid_store"
+    app.run(debug=True, port=config.deployment.www.testing_frontend_port)
     return 0
 
 ################################## Boilerplate #################################
@@ -36,10 +30,7 @@ def _configure_logging():
 
 #### For use with entry_points/console_scripts
 def main_entry_point():
-    args = parser.parse_args()
-    if args.verbose:
-        _configure_logging()
-    sys.exit(main(args))
+    sys.exit(main(parser.parse_args()))
 if __name__ == '__main__':
     main_entry_point()
 
