@@ -22,8 +22,12 @@ def debug():
     if config.rabbitmq.enabled:
         commands.append("rabbitmq-server")
     if config.celery.enabled:
-        commands.append("cd {0}/www && PYTHONPATH={0} celeryd -l DEBUG -B --config=config.celeryconfig".format(LOCAL_PROJECT_ROOT))
+        celeryd_path = _find_executable("celeryd")
+        commands.append("cd {0}/www && PYTHONPATH={0} {1} -l DEBUG -B --config=config.celeryconfig".format(LOCAL_PROJECT_ROOT, celeryd_path))
     run_tmux_session("{}-test".format(config.app.name), commands)
+
+def _find_executable(name):
+    return local("which {0}".format(name), capture=True).stdout
 
 def _purge_previous_dirs():
     local("rm -rf {}".format(_TESTING_MONGO_DB_PATH))
