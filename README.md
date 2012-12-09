@@ -1,6 +1,8 @@
 Mailboxer
 ========
 
+![Build Status](https://secure.travis-ci.org/vmalloc/mailboxer.png ) 
+
 Mailboxer is a small server-side app that is intended for programmatic testing of mail delivery for long-running systems. It provides an SMTP server, and a simple REST api to manipulate mailboxes and queued emails.
 
 Unlike off-the-shelf SMTP servers, in which you have to edit configuration files and/or manipulate LDAP accounts to create and delete mailboxes, Mailboxer enables you to rapidly create and dispose of mailboxes through a programmatic API. Emails arriving at nonexistent mailboxes are automatically discarded quietly, and are only collected when a mailbox exists. You then can proceed to obtain the emails that did arrive through a dedicated API.
