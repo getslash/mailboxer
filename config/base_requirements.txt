@@ -2,3 +2,5 @@ confetti
 fabric
 fabtools
 jinja2
+requests
+urlobject
