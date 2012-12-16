@@ -14,7 +14,7 @@ import sys
 def deploy_to_vagrant():
     with lcd(os.path.dirname(__file__)):
         local("vagrant up")
-        with settings(user="vagrant", host_string="127.0.0.1", port=2222, key_filename="~/.vagrant.d/insecure_private_key"):
+        with settings(user="vagrant", host="127.0.0.1", host_string="vagrant@127.0.0.1:2222", port=2222, key_filename="~/.vagrant.d/insecure_private_key"):
             deploy_to_server()
 def vagrant(cmd):
     with lcd(os.path.dirname(__file__)):
