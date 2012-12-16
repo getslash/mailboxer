@@ -1,5 +1,5 @@
 from pymongo.helpers import AutoReconnect
-from .test_utils import TestCase
+from ..test_utils import TestCase
 from flask_app.utils.pymongo_wrapper import wrap_pymongo_connection
 
 class PymongoConnectionWrappingTest(TestCase):

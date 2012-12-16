@@ -2,3 +2,7 @@ confetti
 fabric
 fabtools
 jinja2
+requests
+urlobject
+nose
+nose-testconfig
