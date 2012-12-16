@@ -6,6 +6,7 @@ flask==0.9
 Flask-OpenID
 gevent
 jinja2
+mongokit==0.8.2
 Flask-MongoKit==0.6
 flask-gravatar
 nose
