@@ -43,6 +43,8 @@ To get all messages in an inbox:
 Or you can get only *unread* messages:
 
     <pre>curl http://{{host}}/messages/myuser@somedomain.com/unread</pre>
+
+<strong>NOTE:</strong> Getting unread messages will only yield {{config.max_unread_messages_page_size}} messages at a time, to prevent flooding.
   </div>
 </div>
 
