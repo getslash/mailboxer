@@ -8,5 +8,6 @@ before_install:
   - echo -e "Host localhost 127.0.0.1\nStrictHostKeyChecking no\nIdentityFile ~/.ssh/id_rsa_localhost" >> ~/.ssh/config
 install: 
   - sudo easy_install nose fabric confetti jinja2 fabtools
+  - fab deploy_to_server -H 127.0.0.1 -i ~/.ssh/id_rsa_localhost
 # command to run tests, e.g. python setup.py test
-script: fab deploy_to_server -H 127.0.0.1 -i ~/.ssh/id_rsa_localhost
+script: nosetests -w tests --tc ww_port:80 --tc vagrant_enabled:no
