@@ -36,6 +36,7 @@ configobj = confetti.Config(dict(
         enabled = True,
         db_path = os.path.join(DATA_ROOT, "redis"),
     ),
+    max_unread_messages_page_size = 1000,
     deployment = dict(
         user = APP_NAME,
         group = APP_NAME,

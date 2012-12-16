@@ -4,6 +4,7 @@ import requests
 import smtplib
 import urlparse
 from unittest import TestCase
+from config import config
 
 class MailboxrTestBase(TestCase):
     def setUp(self):
@@ -55,6 +56,14 @@ class EmailTest(MailboxrTestBase):
         self._send_email("email")
         self.assertEquals(len(self.get_unread_messages()), 1)
         self.assertEquals(len(self.get_unread_messages()), 0)
+    def test__unread_messages_paging(self):
+        for i in range(2):
+            for j in range(config.max_unread_messages_page_size):
+                self._send_email("email")
+        for i in range(2):
+            unread = self.get_unread_messages()
+            self.assertEquals(len(unread), config.max_unread_messages_page_size)
+        self.assertEquals(self.get_unread_messages(), [])
     def test__recreate_mailbox_deletes_emails(self):
         self._send_email("email")
         self.assertEquals(len(self.get_all_messages()), 1)

@@ -1,5 +1,6 @@
 import logging
 from bson import ObjectId
+from .redis import get_connection as get_redis_connection
 from .db import (
     get_mailbox_collection,
     get_message_collection,
@@ -7,6 +8,8 @@ from .db import (
     get_message_fs_files_collection,
     get_message_fs_chunks_collection,
     )
+
+redis = get_redis_connection()
 
 def process_message(peer, mailfrom, rcpttos, data):
     mailboxes = get_mailbox_collection()
@@ -20,6 +23,7 @@ def process_message(peer, mailfrom, rcpttos, data):
         assert get_message_fs().get(message_file_id)
         _associate_file_with_mailbox(message_file_id, rcptto)
         messages.save({
+                "id" : redis.incr("mailboxer.message_id"),
                 "mailbox_name":rcptto,
                 "mail_from" : mailfrom,
                 "sent_from" : peer,
@@ -37,13 +41,16 @@ def delete_all_messages():
     for collection in (get_message_fs_chunks_collection(), get_message_fs_files_collection()):
         collection.remove()
 
-def get_messages(mailbox_name, include_read=True):
+def get_messages(mailbox_name, include_read=True, limit=None):
     returned = []
     returned_ids = []
     criteria = {"mailbox_name" : mailbox_name}
     if not include_read:
         criteria.update({"read" : {"$ne" : True}})
-    for message in get_message_collection().find(criteria):
+    cursor = get_message_collection().find(criteria)
+    if limit is not None:
+        cursor = cursor.limit(limit)
+    for message in cursor:
         message_dict = dict(message)
         message_dict["message"] = get_message_fs().get(ObjectId(message_dict.pop("file_id"))).read()
         returned_ids.append(message_dict.pop("_id"))

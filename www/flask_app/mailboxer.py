@@ -6,6 +6,7 @@ from flask import Blueprint
 from flask import request
 import logging
 
+from config import config
 from .db import (
     get_mailbox_collection,
     get_message_collection,
@@ -53,7 +54,7 @@ def get_messages(mailbox_name):
 @blueprint.route("/messages/<mailbox_name>/unread")
 @returns_json_response
 def get_unread_messages(mailbox_name):
-    return messages.get_messages(mailbox_name, include_read=False)
+    return messages.get_messages(mailbox_name, include_read=False, limit=config.max_unread_messages_page_size)
 
 
 @blueprint.route("/summary")
