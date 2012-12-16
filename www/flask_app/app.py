@@ -15,9 +15,18 @@ app = flask.Flask(__name__, static_folder=os.path.join(fix_paths.PROJECT_ROOT, "
 app.config["SECRET_KEY"] = config.flask.secret_key
 
 @app.before_first_request
-def _check_secret_key():
+def _configure():
+    # openid session store
+    app.config["OPENID_FS_STORE_PATH"] = config.deployment.openid.storage_path
+    # secret key
     if not app.config["SECRET_KEY"]:
         raise RuntimeError("No secret key configured!")
+    # logging for debug mode
+    if not app.debug:
+        file_handler = WatchedFileHandler(config.deployment.log_path)
+        file_handler.setLevel(logging.WARNING)
+        app.logger.addHandler(file_handler)
+
 
 gravatar = Gravatar(app,
                     size=24,
@@ -26,14 +35,7 @@ gravatar = Gravatar(app,
                     force_default=False,
                     force_lower=False)
 
-oid = OpenID(app, config.deployment.openid.storage_path)
-
-@app.before_first_request
-def _setup_logging():
-    if not app.debug:
-        file_handler = WatchedFileHandler(config.deployment.log_path)
-        file_handler.setLevel(logging.WARNING)
-        app.logger.addHandler(file_handler)
+oid = OpenID(app)
 
 @app.route("/")
 def index():
