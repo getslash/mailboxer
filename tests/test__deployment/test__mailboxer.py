@@ -37,7 +37,7 @@ class MailboxesManagementTest(MailboxrTestBase):
             self._post("/mailboxes/", data=dict(name="*"))
         self.assertEquals(caught.exception.response.status_code, httplib.BAD_REQUEST)
     def get_mailboxes(self):
-        return self._get("/mailboxes/").json
+        return self._get("/mailboxes/").json()
 
 class EmailTest(MailboxrTestBase):
     def setUp(self):
@@ -72,8 +72,8 @@ class EmailTest(MailboxrTestBase):
         self._post("/mailboxes/", data=dict(name=self.email))
         self.assertEquals(len(self.get_all_messages()), 0)
     def get_all_messages(self):
-        return self._get("/messages/" + self.email).json
+        return self._get("/messages/" + self.email).json()
     def get_unread_messages(self):
-        return self._get("/messages/" + self.email +"/unread").json
+        return self._get("/messages/" + self.email +"/unread").json()
     def _send_email(self, msg):
         smtplib.SMTP("127.0.0.1", config_utils.get_config_int("smtp_port", 2525)).sendmail(self.fromaddress, [self.email], msg)
