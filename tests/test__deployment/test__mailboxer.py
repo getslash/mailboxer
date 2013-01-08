@@ -42,9 +42,15 @@ class MailboxesManagementTest(MailboxrTestBase):
 class EmailTest(MailboxrTestBase):
     def setUp(self):
         super(EmailTest, self).setUp()
+        self.create_mailbox()
+    def create_mailbox(self):
         self._post("/mailboxes/", data=dict(name=self.email))
     def test__no_emails_by_default(self):
         self.assertEquals([], self.get_all_messages())
+    def test__cannot_create_multiple_mailboxes_same_name(self):
+        with self.assertRaises(requests.HTTPError) as caught:
+            self.create_mailbox()
+        self.assertEquals(caught.exception.response.status_code, httplib.CONFLICT)
     def test__no_unread_emails_by_default(self):
         self.assertEquals([], self.get_unread_messages())
     def test__send_receive_email(self):

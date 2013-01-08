@@ -1,5 +1,6 @@
 from httplib import (
     BAD_REQUEST,
+    CONFLICT,
 )
 from flask import abort
 from flask import Blueprint
@@ -28,7 +29,10 @@ def add_mailbox():
     data = _check_request_data("name")
     if "*" in data["name"]:
         abort(BAD_REQUEST)
-    get_mailbox_collection().save(data)
+    mailboxes = get_mailbox_collection()
+    if mailboxes.find(data).count():
+        abort(CONFLICT)
+    resp = mailboxes.update(data, data, upsert=True) # avoid duplicates
     assert isinstance(data["name"], basestring)
     return dict(name=data["name"])
 
