@@ -10,6 +10,7 @@ install:
   - sudo apt-get -y install libevent-dev
   - sudo pip install -r config/base_requirements.txt
   - sudo pip install -r config/app_requirements.txt
+  - sudo pip install nose-testconfig
   - fab deploy_to_server -H 127.0.0.1 -i ~/.ssh/id_rsa_localhost
 # command to run tests, e.g. python setup.py test
 script: nosetests -w tests --tc www_port:80 --tc smtp_port:25 --tc vagrant_enabled:no
