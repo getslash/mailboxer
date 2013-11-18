@@ -2,6 +2,7 @@ import functools
 import httplib
 
 from flask import request, make_response
+from sqlalchemy.orm import class_mapper
 import werkzeug.exceptions
 
 class Parameter(object):
@@ -25,6 +26,8 @@ def get_request_params(schema):
         if not isinstance(param, Parameter):
             param = Parameter(param)
         if param_name not in data and not param.optional:
+            import pudb
+            pudb.set_trace()
             missing.add(param_name)
             continue
         param_value = data[param_name]
@@ -64,3 +67,6 @@ def takes_schema_args(**schema):
             return func(**get_request_params(schema))
         return new_func
     return decorator
+
+def dictify_model(obj):
+    return {column.key: getattr(obj, column.key) for column in class_mapper(obj.__class__).columns}

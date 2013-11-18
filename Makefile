@@ -43,7 +43,7 @@ src_pkg.tar:
 .PHONY: src_pkg.tar
 
 test: env
-	.env/bin/nosetests tests/test_ut
+	.env/bin/nosetests -s tests/test_ut
 
 travis_test: travis_system_install test deploy_localhost_travis
 	.env/bin/nosetests tests/test_deployment --tc www_port:80
