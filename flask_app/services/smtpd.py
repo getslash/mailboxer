@@ -35,7 +35,11 @@ class SMTPServer(smtpd.SMTPServer):
 
     def process_message(self, peer, mailfrom, rcpttos, data):
         logbook.debug("Processing message peer={} from={} to={}", peer, mailfrom, rcpttos)
-        messages.process_incoming_message(messages.Context(peer), mailfrom, rcpttos, data)
+        try:
+            messages.process_incoming_message(messages.Context(peer), mailfrom, rcpttos, data)
+        except:
+            logbook.error("Exception while processing", exc_info=True)
+            raise
 
 #### For use with entry_points/console_scripts
 def main_entry_point():

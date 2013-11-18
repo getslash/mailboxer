@@ -19,3 +19,8 @@ def create_mailbox(email):
 @paged_view
 def list_mailboxes():
     return models.Mailbox.query
+
+@blueprint.route("/mailboxes/<email>/emails")
+@paged_view
+def list_all_mailbox_emails(email):
+    return models.Mailbox.query.filter(models.Mailbox.email==email).first().emails

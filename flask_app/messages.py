@@ -10,7 +10,7 @@ def process_incoming_message(context, fromaddr, recipients, message):
     email = None
     for mailbox in Mailbox.query.filter(Mailbox.email.in_(recipients)):
         if email is None:
-            email = Email(fromaddr=fromaddr, message=message)
+            email = Email(fromaddr=fromaddr, message=message, sent_via_ssl=False)
             db.session.add(email)
         mailbox.emails.append(email)
     db.session.commit()

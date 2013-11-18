@@ -19,4 +19,5 @@ class Email(db.Model):
     recipients = db.relationship(Mailbox, secondary=emails_to_mailboxes, backref=db.backref('emails', lazy='dynamic'))
     fromaddr = db.Column(_EMAIL_TYPE)
     message = db.Column(db.Text())
+    sent_via_ssl = db.Column(db.Boolean)
 
