@@ -1,14 +1,17 @@
-import sys
+import httplib
 import os
-import requests
+import sys
 import unittest
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
+
 from flask_app import app
 from flask_app import models
 
 from .smtpd_utils import smtpd_context
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
+
 class TestCase(unittest.TestCase):
+
     def setUp(self):
         super(TestCase, self).setUp()
         self.app = app.app.test_client()
@@ -18,3 +21,17 @@ class TestCase(unittest.TestCase):
 
         models.db.create_all()
 
+
+def _make_request_shortcut(method):
+    def shortcut(self, *args, **kwargs):
+        returned = getattr(self.app, method)(*args, **kwargs)
+        if returned.status_code not in (httplib.OK, httplib.CREATED):
+            msg = "HTTP {} {}: Error {}".format(method.upper(), args[0], returned.status_code)
+            self.fail(msg)
+        return returned
+
+    shortcut_name = shortcut.__name__ = "_{}".format(method)
+    setattr(TestCase, shortcut_name, shortcut)
+
+for _method in ("get", "put", "post", "delete"):
+    _make_request_shortcut(_method)
