@@ -39,3 +39,6 @@ Mail(app)
 
 from . import errors
 from . import views
+from . import api
+
+app.register_blueprint(api.blueprint, url_prefix="/v2")

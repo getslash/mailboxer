@@ -6,7 +6,7 @@ import unittest
 from flask_app import app
 from flask_app import models
 
-from .smtpd_utils import smtpd_context
+from .smtpd_utils import smtpd_context, send_mail
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 

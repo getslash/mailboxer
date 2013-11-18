@@ -8,6 +8,10 @@ import errno
 from flask_app.services import smtpd
 
 
+def send_mail(fromaddr, recipients, message):
+    with smtpd_context() as client:
+        client.sendmail(fromaddr, recipients, message)
+
 @contextmanager
 def smtpd_context():
     server = smtpd.initialize_server(0, secure=False)
