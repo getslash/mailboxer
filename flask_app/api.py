@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify
 
 from .models import *
 from .pagination import paginated_view, paginate_query
-from .request_utils import dictify_model, takes_schema_args
+from weber_utils import dictify_model, takes_schema_args
 
 blueprint = Blueprint("v2", __name__)
 

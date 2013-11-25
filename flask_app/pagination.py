@@ -1,7 +1,7 @@
 import functools
 
 from flask import jsonify
-from .request_utils import dictify_model
+from weber_utils import dictify_model
 
 def paginate_query(query):
     return {
