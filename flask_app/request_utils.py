@@ -26,8 +26,6 @@ def get_request_params(schema):
         if not isinstance(param, Parameter):
             param = Parameter(param)
         if param_name not in data and not param.optional:
-            import pudb
-            pudb.set_trace()
             missing.add(param_name)
             continue
         param_value = data[param_name]

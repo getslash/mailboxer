@@ -1,26 +1,34 @@
 from flask import Blueprint, jsonify
 
-from . import models
-from .pagination import paged_view
+from .models import *
+from .pagination import paginated_view, paginate_query
 from .request_utils import dictify_model, takes_schema_args
 
 blueprint = Blueprint("v2", __name__)
 
 @blueprint.route("/mailboxes", methods=["post"])
-@takes_schema_args(email=str)
-def create_mailbox(email):
-    mailbox = models.Mailbox(email=email)
-    models.db.session.add(mailbox)
-    models.db.session.commit()
+@takes_schema_args(address=str)
+def create_mailbox(address):
+    mailbox = Mailbox(address=address)
+    db.session.add(mailbox)
+    db.session.commit()
     return jsonify(dictify_model(mailbox))
 
 
 @blueprint.route("/mailboxes")
-@paged_view
+@paginated_view
 def list_mailboxes():
-    return models.Mailbox.query
+    return Mailbox.query
 
-@blueprint.route("/mailboxes/<email>/emails")
-@paged_view
-def list_all_mailbox_emails(email):
-    return models.Mailbox.query.filter(models.Mailbox.email==email).first().emails
+@blueprint.route("/mailboxes/<address>/emails")
+@paginated_view
+def list_all_mailbox_emails(address):
+    return Mailbox.query.filter(Mailbox.address==address).first().emails
+
+@blueprint.route("/mailboxes/<address>/unread_emails")
+def list_unread_mailbox_emails(address):
+    query = Email.query.join(Mailbox).filter(Mailbox.address==address, Email.read==False).order_by(Email.timestamp)
+    returned = paginate_query(query)
+    Email.query.filter(Email.id.in_([obj["id"] for obj in returned["result"]])).update({Email.read: True}, synchronize_session="fetch")
+    db.session.commit()
+    return jsonify(returned)

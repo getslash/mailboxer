@@ -16,6 +16,7 @@ class TestCase(unittest.TestCase):
         super(TestCase, self).setUp()
         self.app = app.app.test_client()
         app.app.config["SECRET_KEY"] = "testing_key"
+        app.app.config["TESTING"] = True
         models.db.session.close()
         models.db.drop_all()
 

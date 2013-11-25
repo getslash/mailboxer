@@ -1,4 +1,4 @@
-from .models import Mailbox, Email, db, emails_to_mailboxes
+from .models import Mailbox, Email, db
 
 class Context(object):
 
@@ -8,9 +8,7 @@ class Context(object):
 
 def process_incoming_message(context, fromaddr, recipients, message):
     email = None
-    for mailbox in Mailbox.query.filter(Mailbox.email.in_(recipients)):
-        if email is None:
-            email = Email(fromaddr=fromaddr, message=message, sent_via_ssl=False)
-            db.session.add(email)
-        mailbox.emails.append(email)
+    for mailbox in Mailbox.query.filter(Mailbox.address.in_(recipients)):
+        email = Email(fromaddr=fromaddr, message=message, sent_via_ssl=False, mailbox_id=mailbox.id)
+        db.session.add(email)
     db.session.commit()
