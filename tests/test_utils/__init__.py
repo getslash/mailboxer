@@ -22,7 +22,6 @@ class TestCase(unittest.TestCase):
 
         models.db.create_all()
 
-
 def _make_request_shortcut(method):
     def shortcut(self, *args, **kwargs):
         returned = getattr(self.app, method)(*args, **kwargs)
