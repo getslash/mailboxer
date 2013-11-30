@@ -23,12 +23,13 @@ def list_mailboxes():
 @blueprint.route("/mailboxes/<address>/emails")
 @paginated_view
 def list_all_mailbox_emails(address):
-    return Mailbox.query.filter(Mailbox.address==address).first().emails
+    return Email.query.join(Mailbox).filter(Mailbox.address==address)
 
 @blueprint.route("/mailboxes/<address>/unread_emails")
 def list_unread_mailbox_emails(address):
     query = Email.query.join(Mailbox).filter(Mailbox.address==address, Email.read==False).order_by(Email.timestamp)
     returned = paginate_query(query)
-    Email.query.filter(Email.id.in_([obj["id"] for obj in returned["result"]])).update({Email.read: True}, synchronize_session="fetch")
+    if returned["result"]:
+        Email.query.filter(Email.id.in_([obj["id"] for obj in returned["result"]])).update({Email.read: True}, synchronize_session="fetch")
     db.session.commit()
     return jsonify(returned)

@@ -24,6 +24,19 @@ class MailboxTest(SingleMailboxTest):
     def test_get_emails_empty(self):
         self.assertEquals([], self._get_single_page("/v2/mailboxes/{}/emails".format(self.mailbox_email)))
 
+class PaginationTest(TestCase):
+
+    def setUp(self):
+        super(PaginationTest, self).setUp()
+        self.num_mailboxes = 10
+        for i in range(self.num_mailboxes):
+            self._post("/v2/mailboxes", data={"address": "mailbox{}@blap.com".format(i)})
+
+    def test_pagination(self):
+        response = json.loads(self._get("/v2/mailboxes?page_size=2").data)
+        self.assertEquals(response["metadata"]["total_num_pages"], 5)
+
+
 
 class EmailSendingTest(SingleMailboxTest):
 
