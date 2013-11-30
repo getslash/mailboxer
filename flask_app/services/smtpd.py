@@ -11,6 +11,7 @@ import os
 import smtpd
 import sys
 
+from .. import app # needed to prevent cyclic dependency
 from .. import messages
 
 parser = argparse.ArgumentParser(usage="%(prog)s [options] args...")
