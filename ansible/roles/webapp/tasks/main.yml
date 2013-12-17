@@ -5,6 +5,7 @@
     - "{{deploy_root}}/conf.d"
 - include: redis.yml
 - include: nginx.yml
+- include: haproxy.yml
 - include: virtualenv.yml
 - include: configuration.yml
 - name: ensure uwsgi is installed
@@ -15,7 +16,6 @@
 - include: install_sources.yml
   when: sources.changed or configuration.changed
 - name: configure supervisor
-  action: template src=../templates/supervisor.j2 dest=/etc/supervisor/conf.d/{{app_name}}-wsgi.conf
+  action: template src=../templates/supervisor_uwsgi.j2 dest=/etc/supervisor/conf.d/{{app_name}}-wsgi.conf
   register: supervisor_conf
-- shell: supervisorctl reload
-  when: supervisor_conf.changed
+  notify: restart supervisor

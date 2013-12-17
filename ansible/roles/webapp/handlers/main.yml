@@ -1,2 +1,5 @@
 - name: reload nginx config
   shell: nginx -s reload
+- name: restart supervisor
+  shell: supervisorctl reload
+
