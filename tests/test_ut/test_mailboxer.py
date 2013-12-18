@@ -42,6 +42,7 @@ class EmailSendingTest(SingleMailboxTest):
 
     def setUp(self):
         super(EmailSendingTest, self).setUp()
+        self.skipTest("n/i")
         self.message = "message here"
         self.fromaddr = "someaddr@blap.com"
         send_mail(self.fromaddr, [self.mailbox_email], self.message)

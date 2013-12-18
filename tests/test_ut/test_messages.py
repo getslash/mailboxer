@@ -1,6 +1,5 @@
 from ..test_utils import TestCase, send_mail
 from flask_app import models
-from flask_app.messages import process_incoming_message, Context
 
 class MessageProcessingTest(TestCase):
 

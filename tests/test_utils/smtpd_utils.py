@@ -1,11 +1,10 @@
-import asyncore
-import select
 import threading
 from contextlib import contextmanager
 from smtplib import SMTP
+from socket import socket
 
-import errno
-from flask_app.services import smtpd
+from flask_app.message_sink import DatabaseMessageSink
+from flask_app.smtp import SMTPServingThread
 
 
 def send_mail(fromaddr, recipients, message):
@@ -14,23 +13,33 @@ def send_mail(fromaddr, recipients, message):
 
 @contextmanager
 def smtpd_context():
-    server = smtpd.initialize_server(0, secure=False)
-    _, server_port = server.socket.getsockname()
 
-    asyncore_thread = threading.Thread(target=_asyncore_thread)
+    sock = socket()
+    sock.bind(("127.0.0.1", 0))
+    sock.listen(1)
 
-    asyncore_thread.start()
+    _, server_port = sock.getsockname()
+
+    thread = ListenerThread(sock, DatabaseMessageSink())
+    thread.start()
+
     client = SMTP("127.0.0.1", server_port)
     try:
         yield client
         client.quit()
     finally:
-        asyncore.close_all()
-        asyncore_thread.join()
+        thread.join()
+        sock.close()
 
-def _asyncore_thread():
-    try:
-        asyncore.loop()
-    except select.error as e:
-        if e.args[0] != errno.EBADF:
-            raise
+class ListenerThread(threading.Thread):
+
+    def __init__(self, sock, sink):
+        super(ListenerThread, self).__init__()
+        self.sock = sock
+        self.sink = sink
+
+    def run(self):
+        p, a = self.sock.accept()
+        thread = SMTPServingThread(p, self.sink)
+        thread.start()
+        thread.join()
