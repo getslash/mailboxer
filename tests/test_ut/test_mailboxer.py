@@ -6,8 +6,13 @@ class SingleMailboxTest(TestCase):
 
     def setUp(self):
         super(SingleMailboxTest, self).setUp()
+        self.message = "message here"
+        self.fromaddr = "someaddr@blap.com"
         self.mailbox_email = "mailbox_email@blap.com"
         self._post("/v2/mailboxes", data={"address": self.mailbox_email})
+
+    def get_all_emails(self):
+        return self._get_single_page("/v2/mailboxes/{}/emails".format(self.mailbox_email))
 
     def _get_single_page(self, url):
         returned = json.loads(self._get(url).data)
@@ -22,7 +27,7 @@ class MailboxTest(SingleMailboxTest):
         self.assertEquals(mailbox["address"], self.mailbox_email)
 
     def test_get_emails_empty(self):
-        self.assertEquals([], self._get_single_page("/v2/mailboxes/{}/emails".format(self.mailbox_email)))
+        self.assertEquals([], self.get_all_emails())
 
 class PaginationTest(TestCase):
 
@@ -37,18 +42,14 @@ class PaginationTest(TestCase):
         self.assertEquals(response["metadata"]["total_num_pages"], 5)
 
 
-
 class EmailSendingTest(SingleMailboxTest):
 
     def setUp(self):
         super(EmailSendingTest, self).setUp()
-        self.skipTest("n/i")
-        self.message = "message here"
-        self.fromaddr = "someaddr@blap.com"
         send_mail(self.fromaddr, [self.mailbox_email], self.message)
 
     def test_send_receive_email(self):
-        [email] = self._get_single_page("/v2/mailboxes/{}/emails".format(self.mailbox_email))
+        [email] = self.get_all_emails()
         email.pop("timestamp")
         self.assertEquals(email, {
             "id": 1,
@@ -64,3 +65,13 @@ class EmailSendingTest(SingleMailboxTest):
              for email in self._get_single_page("/v2/mailboxes/{}/unread_emails".format(self.mailbox_email))]
         self.assertEquals(len(l), 1)
         [] = self._get_single_page("/v2/mailboxes/{}/unread_emails".format(self.mailbox_email))
+
+class TLSTest(SingleMailboxTest):
+
+    def setUp(self):
+        super(TLSTest, self).setUp()
+        send_mail(self.fromaddr, [self.mailbox_email], self.message, secure=True)
+
+    def test_email_marked_secure(self):
+        [email] = self.get_all_emails()
+        self.skipTest("n/i")

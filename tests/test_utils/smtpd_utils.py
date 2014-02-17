@@ -1,3 +1,4 @@
+import logbook
 import threading
 from contextlib import contextmanager
 from smtplib import SMTP
@@ -7,9 +8,19 @@ from flask_app.message_sink import DatabaseMessageSink
 from flask_app.smtp import SMTPServingThread
 
 
-def send_mail(fromaddr, recipients, message):
+def send_mail(fromaddr, recipients, message, secure=False):
     with smtpd_context() as client:
-        client.sendmail(fromaddr, recipients, message)
+        try:
+            client.ehlo()
+            if secure:
+                logbook.debug("Starting TLS...")
+                client.starttls()
+                logbook.debug("TLS initiated")
+            client.sendmail(fromaddr, recipients, message)
+        except:
+            logbook.error("Error while sending email", exc_info=True)
+            client.close()
+            raise
 
 @contextmanager
 def smtpd_context():
