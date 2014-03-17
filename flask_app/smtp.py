@@ -23,9 +23,12 @@ class SMTPServingThread(threading.Thread):
             raise
 
     def _run(self):
+
         self._sock.sendall("220 Mailboxer\r\n")
-        while True:
-            ctx = Context()
+        self._running = True
+        while self._running:
+            self.ctx = Context()
+
             hello_line = self._sock.recv_line()
             if hello_line.strip().lower() == "quit":
                 self._send_line("221 Bye")
@@ -38,18 +41,18 @@ class SMTPServingThread(threading.Thread):
                 helo_line = self._sock.recv_line()
                 self._send_ok()
                 line = self._sock.recv_line()
-            ctx.fromaddr = line.split(":", 1)[1].strip()[1:-1]
+            self.ctx.fromaddr = line.split(":", 1)[1].strip()[1:-1]
             self._send_ok()
             line = self._sock.recv_line()
             while line.lower().startswith("rcpt to:"):
-                ctx.recipients.append(line.split(":", 1)[1].strip()[1:-1])
+                self.ctx.recipients.append(line.split(":", 1)[1].strip()[1:-1])
                 self._send_ok()
                 line = self._sock.recv_line()
             assert line.lower().strip() == "data"
             self._send_line("354 End data with <CR><LF>.<CR><LF>")
-            ctx.data = self._sock.recv_until("\r\n.\r\n")
+            self.ctx.data = self._sock.recv_until("\r\n.\r\n")
             self._send_ok()
-            self._sink.save_message(ctx)
+            self._sink.save_message(self.ctx)
 
         self._sock.close()
 
@@ -66,8 +69,9 @@ class SMTPServingThread(threading.Thread):
 
 _BUFF_SIZE = 4096
 _FLASK_APP_DIR = os.path.abspath(os.path.dirname(__file__))
-_KEY_FILE = os.path.join(_FLASK_APP_DIR, "mailboxer.key")
-_CERT_FILE = os.path.join(_FLASK_APP_DIR, "mailboxer.crt")
+_CUR_DIR = os.path.abspath(os.path.dirname(__file__))
+_KEY_FILE = os.path.join(_CUR_DIR, "mailboxer.key")
+_CERT_FILE = os.path.join(_CUR_DIR, "mailboxer.crt")
 
 class SocketHelper(object):
 
