@@ -29,8 +29,8 @@ class SMTPServingThread(threading.Thread):
         while self._running:
             self.ctx = Context()
 
-            hello_line = self._sock.recv_line()
-            if hello_line.strip().lower() == "quit":
+            helo_line = self._sock.recv_line()
+            if helo_line.strip().lower() == "quit":
                 self._send_line("221 Bye")
                 break
             self._send_extensions_list_and_ok()
