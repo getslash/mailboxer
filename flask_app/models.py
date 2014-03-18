@@ -11,6 +11,7 @@ _EMAIL_TYPE = db.String(160)
 class Mailbox(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     address = db.Column(_EMAIL_TYPE, unique=True, index=True)
+    last_activity = db.Column(db.DateTime, default=datetime.datetime.utcnow, index=True)
 
 class Email(db.Model):
     id = db.Column(db.Integer, primary_key=True)

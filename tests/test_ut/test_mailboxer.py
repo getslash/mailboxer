@@ -1,6 +1,10 @@
+import datetime
 import json
 
+from flask_app import models
+
 from ..test_utils import send_mail, TestCase
+
 
 class SingleMailboxTest(TestCase):
 
@@ -75,3 +79,20 @@ class TLSTest(SingleMailboxTest):
     def test_email_marked_secure(self):
         [email] = self.get_all_emails()
         self.assertTrue(email["sent_via_ssl"])
+
+class MailboxActivityTest(SingleMailboxTest):
+
+    def setUp(self):
+        super(MailboxActivityTest, self).setUp()
+        mailbox = self._get_mailbox_db_object()
+        mailbox.last_activity -= datetime.timedelta(seconds=1000)
+        self.orig_last_activity = mailbox.last_activity
+        models.db.session.add(mailbox)
+        models.db.session.commit()
+
+    def _get_mailbox_db_object(self):
+        return models.Mailbox.query.filter(models.Mailbox.address==self.mailbox_email).one()
+
+    def test_activity(self):
+        send_mail(self.fromaddr, [self.mailbox_email], self.message)
+        self.assertNotEquals(self.orig_last_activity, self._get_mailbox_db_object().last_activity)

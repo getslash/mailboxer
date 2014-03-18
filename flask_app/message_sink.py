@@ -1,4 +1,5 @@
 import logbook
+import datetime
 
 from .models import Mailbox, Email, db
 
@@ -26,8 +27,11 @@ class DatabaseMessageSink(MessageSink):
     def save_message(self, ctx):
         _logger.debug("Saving email: {}", ctx)
         email = None
+        now = datetime.datetime.utcnow()
         for mailbox in Mailbox.query.filter(Mailbox.address.in_(ctx.recipients)):
             email = Email(fromaddr=ctx.fromaddr, message=ctx.data, sent_via_ssl=ctx.ssl, mailbox_id=mailbox.id)
+            mailbox.last_activity = now
+            db.session.add(mailbox)
             db.session.add(email)
         db.session.commit()
 
