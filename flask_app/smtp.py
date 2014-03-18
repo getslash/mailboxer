@@ -41,6 +41,8 @@ class SMTPServingThread(threading.Thread):
                 helo_line = self._sock.recv_line()
                 self._send_ok()
                 line = self._sock.recv_line()
+                assert not self.ctx.ssl
+                self.ctx.ssl = True
             self.ctx.fromaddr = line.split(":", 1)[1].strip()[1:-1]
             self._send_ok()
             line = self._sock.recv_line()

@@ -74,4 +74,4 @@ class TLSTest(SingleMailboxTest):
 
     def test_email_marked_secure(self):
         [email] = self.get_all_emails()
-        self.skipTest("n/i")
+        self.assertTrue(email["sent_via_ssl"])

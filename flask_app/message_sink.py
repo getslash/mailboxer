@@ -9,6 +9,7 @@ class Context(object):
     def __init__(self):
         super(Context, self).__init__()
         self.peer = self.data = self.fromaddr = None
+        self.ssl = False
         self.recipients = []
 
     def __repr__(self):
@@ -26,7 +27,7 @@ class DatabaseMessageSink(MessageSink):
         _logger.debug("Saving email: {}", ctx)
         email = None
         for mailbox in Mailbox.query.filter(Mailbox.address.in_(ctx.recipients)):
-            email = Email(fromaddr=ctx.fromaddr, message=ctx.data, sent_via_ssl=False, mailbox_id=mailbox.id)
+            email = Email(fromaddr=ctx.fromaddr, message=ctx.data, sent_via_ssl=ctx.ssl, mailbox_id=mailbox.id)
             db.session.add(email)
         db.session.commit()
 
