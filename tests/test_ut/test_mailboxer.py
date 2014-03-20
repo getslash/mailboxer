@@ -1,5 +1,6 @@
 import datetime
 import json
+import logging
 
 from flask_app import models
 
@@ -10,6 +11,7 @@ class SingleMailboxTest(TestCase):
 
     def setUp(self):
         super(SingleMailboxTest, self).setUp()
+        assert len(models.Email.query.all()) == 0
         self.message = "message here"
         self.fromaddr = "someaddr@blap.com"
         self.mailbox_email = "mailbox_email@blap.com"
@@ -80,10 +82,12 @@ class TLSTest(SingleMailboxTest):
         [email] = self.get_all_emails()
         self.assertTrue(email["sent_via_ssl"])
 
+
 class MailboxActivityTest(SingleMailboxTest):
 
     def setUp(self):
         super(MailboxActivityTest, self).setUp()
+        send_mail(self.fromaddr, [self.mailbox_email], self.message)
         mailbox = self._get_mailbox_db_object()
         mailbox.last_activity -= datetime.timedelta(seconds=1000)
         self.orig_last_activity = mailbox.last_activity
@@ -96,3 +100,16 @@ class MailboxActivityTest(SingleMailboxTest):
     def test_activity(self):
         send_mail(self.fromaddr, [self.mailbox_email], self.message)
         self.assertNotEquals(self.orig_last_activity, self._get_mailbox_db_object().last_activity)
+
+    def test_vacuum_arg_required(self):
+        assert self.app.post("/v2/vacuum").status_code == 400
+
+    def test_vacuum(self):
+        self._post("/v2/mailboxes", data={"address": "new_email@email.com"})
+        self.assertEquals(
+            len(models.Mailbox.query.all()), 2)
+        self._post("/v2/vacuum?max_age_seconds=500")
+        self.assertEquals(
+            len(models.Mailbox.query.all()), 1)
+        for email in models.Email.query.all():
+            assert False, "Email {0} still exists".format(email.mailbox)

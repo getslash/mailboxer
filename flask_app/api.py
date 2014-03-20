@@ -1,8 +1,11 @@
-from flask import Blueprint, jsonify
+import httplib
+
+from flask import abort, Blueprint, jsonify, request
+
+from weber_utils import (dictify_model, paginate_query, paginated_view,
+                         takes_schema_args)
 
 from .models import *
-from weber_utils import paginated_view, paginate_query
-from weber_utils import dictify_model, takes_schema_args
 
 blueprint = Blueprint("v2", __name__)
 
@@ -33,3 +36,18 @@ def list_unread_mailbox_emails(address):
         Email.query.filter(Email.id.in_([obj["id"] for obj in returned["result"]])).update({Email.read: True}, synchronize_session="fetch")
     db.session.commit()
     return jsonify(returned)
+
+@blueprint.route("/vacuum", methods=["post"])
+def vacuum_old_mailboxes():
+    max_age_seconds = request.args.get("max_age_seconds")
+    try:
+        max_age_seconds = int(max_age_seconds)
+    except (ValueError, TypeError):
+        abort(httplib.BAD_REQUEST)
+
+    threshold = datetime.datetime.utcnow() - datetime.timedelta(seconds=max_age_seconds)
+
+    for m in Mailbox.query.filter(Mailbox.last_activity < threshold):
+        db.session.delete(m)
+    db.session.commit()
+    return "ok"
