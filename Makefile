@@ -30,7 +30,7 @@ deploy_localhost: src_pkg.tar env
 	.env/bin/ansible-playbook -i ansible/inventories/localhost -c local --sudo ansible/site.yml
 
 deploy_localhost_travis: deploy_localhost
-	sleep 5 # travis uses slow nodes and tends to take time to bring the uwsgi app online
+	sleep 20 # travis uses slow nodes and tends to take time to bring the uwsgi app online
 
 deploy_vagrant: env src_pkg.tar vagrant_up
 	ANSIBLE_HOST_KEY_CHECKING=False .env/bin/ansible-playbook -i ansible/inventories/vagrant ansible/site.yml
