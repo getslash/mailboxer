@@ -1,3 +1,6 @@
+import itertools
+import datetime
+import json
 import os
 import sys
 import uuid
@@ -8,6 +11,8 @@ from urlobject import URLObject as URL
 
 import pytest
 from flask_app import app, models
+
+from .test_utils import send_mail
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -28,7 +33,7 @@ def webapp(request, db):
     request.addfinalizer(returned.deactivate)
     return returned
 
-@pytest.fixture
+@pytest.fixture(autouse=True, scope="function")
 def db(request):
     models.db.session.close()
     models.db.drop_all()
@@ -66,3 +71,77 @@ class Webapp(object):
 
     def put(self, *args, **kwargs):
         return self._request("put", *args, **kwargs)
+
+    def get_single_page(self, path):
+        returned = self.get(path).json()
+        assert returned['metadata']['total_num_pages'] == 1
+        assert returned['metadata']['page'] == 1
+        return returned["result"]
+
+################################################################################
+_id_generator = itertools.count()
+
+@pytest.fixture
+def page_size(request):
+    return 100
+
+@pytest.fixture
+def recipient(webapp):
+    return make_recipient(webapp)
+
+@pytest.fixture
+def recipients(webapp):
+    return [make_recipient(webapp) for i in range(5)]
+
+def make_recipient(webapp):
+    recipient = Recipient()
+    webapp.post("/v2/mailboxes", **json_post({"address": recipient.address})).raise_for_status()
+    return recipient
+
+@pytest.fixture
+def inactive_recipient(webapp):
+    returned = recipient(webapp)
+    mailbox = returned.get_mailbox_obj()
+    mailbox.last_activity -= datetime.timedelta(seconds=1000)
+    models.db.session.add(mailbox)
+    models.db.session.commit()
+    return returned
+
+class Recipient(object):
+
+    def __init__(self):
+        super(Recipient, self).__init__()
+        self.address = "recipient{}@some.domain.com".format(next(_id_generator))
+
+    def get_mailbox_obj(self):
+        return models.Mailbox.query.filter(models.Mailbox.address == self.address).one()
+
+@pytest.fixture
+def unsent_email():
+    return Email()
+
+@pytest.fixture
+def email(recipient):
+    returned = Email()
+    send_mail(returned.fromaddr, [recipient.address], returned.message)
+    return returned
+
+@pytest.fixture
+def emails(recipient, num_emails=5):
+    returned = [Email() for i in range(5)]
+    for e in returned:
+        send_mail(e.fromaddr, [recipient.address], e.message)
+    return returned
+
+class Email(object):
+
+    def __init__(self):
+        super(Email, self).__init__()
+        self.fromaddr = "from{}@some.domain.com".format(next(_id_generator))
+        self.message = "message here!"
+
+
+################################################################################
+
+def json_post(data):
+    return {"data": json.dumps(data), "headers": {"Content-type": "application/json"}}
