@@ -15,11 +15,11 @@ def test_incoming_message_no_mailbox_match():
     assert models.Email.query.count() == 0
 
 
-def test_get_all_emails(webapp, recipient, emails):
-    received = webapp.get_single_page("/v2/mailboxes/{}/emails".format(recipient.address))
+def test_get_all_emails(mailboxer, recipient, emails):
+    received = mailboxer.get_emails(recipient.address)
     assert len(received) == len(emails)
     for r, e in zip(received, emails):
-        assert r["fromaddr"] == e.fromaddr
+        assert r.fromaddr == e.fromaddr
 
 def test_get_mailboxes_pagination(webapp, recipients, page_size):
     result = webapp.get("/v2/mailboxes?page_size={0}".format(page_size)).json()

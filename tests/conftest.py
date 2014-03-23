@@ -1,6 +1,5 @@
 import itertools
 import datetime
-import json
 import os
 import sys
 import uuid
@@ -13,6 +12,9 @@ import pytest
 from flask_app import app, models
 
 from .test_utils import send_mail
+
+#import from mailboxer-python
+from mailboxer import Mailboxer
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -38,6 +40,10 @@ def db(request):
     models.db.session.close()
     models.db.drop_all()
     models.db.create_all()
+
+@pytest.fixture
+def mailboxer(webapp):
+    return Mailboxer("http://{0}".format(webapp.hostname))
 
 
 class Webapp(object):
@@ -86,21 +92,21 @@ def page_size(request):
     return 100
 
 @pytest.fixture
-def recipient(webapp):
-    return make_recipient(webapp)
+def recipient(mailboxer):
+    return make_recipient(mailboxer)
 
 @pytest.fixture
-def recipients(webapp):
-    return [make_recipient(webapp) for i in range(5)]
+def recipients(mailboxer):
+    return [make_recipient(mailboxer) for i in range(5)]
 
-def make_recipient(webapp):
+def make_recipient(mailboxer):
     recipient = Recipient()
-    webapp.post("/v2/mailboxes", **json_post({"address": recipient.address})).raise_for_status()
+    mailboxer.create_mailbox(recipient.address)
     return recipient
 
 @pytest.fixture
-def inactive_recipient(webapp):
-    returned = recipient(webapp)
+def inactive_recipient(mailboxer):
+    returned = recipient(mailboxer)
     mailbox = returned.get_mailbox_obj()
     mailbox.last_activity -= datetime.timedelta(seconds=1000)
     models.db.session.add(mailbox)
@@ -142,6 +148,3 @@ class Email(object):
 
 
 ################################################################################
-
-def json_post(data):
-    return {"data": json.dumps(data), "headers": {"Content-type": "application/json"}}
