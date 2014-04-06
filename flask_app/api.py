@@ -26,7 +26,7 @@ def list_mailboxes():
 @blueprint.route("/mailboxes/<address>/emails")
 @paginated_view
 def list_all_mailbox_emails(address):
-    return Email.query.join(Mailbox).filter(Mailbox.address==address)
+    return Email.query.join(Mailbox).filter(Mailbox.address==address).order_by(Email.timestamp)
 
 @blueprint.route("/mailboxes/<address>/unread_emails")
 def list_unread_mailbox_emails(address):

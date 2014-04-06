@@ -3,5 +3,6 @@ alembic
 Flask-Script
 Flask-DebugToolbar
 pytest
+psycopg2
 requests>=1.2
 URLObject

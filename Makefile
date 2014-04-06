@@ -3,6 +3,11 @@ default: test
 testserver: env frontend
 	.env/bin/python manage.py testserver
 
+testdb:
+	pg_ctl init -D /tmp/__mailboxerdb
+	pg_ctl start -w -D /tmp/__mailboxerdb
+	createdb mailboxer
+
 clean:
 	rm -rf .env
 	find . -name "*.pyc" -delete
