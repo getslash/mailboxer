@@ -15,6 +15,7 @@ app = flask.Flask(__name__, static_folder=os.path.join(ROOT_DIR, "..", "static")
 # Defaults
 app.config["SECRET_KEY"] = ""
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/mailboxer'
+app.config["MAX_MAILBOX_AGE_SECONDS"] = 7 * 24 * 60 * 60 # 1 week
 
 _CONF_D_PATH = os.path.join(ROOT_DIR, "..", "conf.d")
 

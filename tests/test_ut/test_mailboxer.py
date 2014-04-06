@@ -49,11 +49,9 @@ def test_mailbox_activity_gets_updated(webapp, inactive_recipient, unsent_email)
     send_mail(unsent_email.fromaddr, [inactive_recipient.address], unsent_email.message)
     assert inactive_recipient.get_mailbox_obj().last_activity != orig
 
-def test_vacuum_arg_required(webapp):
-    webapp.post("/v2/vacuum").status_code == 400
-
 def test_vacuum(webapp, inactive_recipient, recipient):
     assert len(models.Mailbox.query.all()) == 2
-    webapp.post("/v2/vacuum?max_age_seconds=500")
+    webapp.app.config["MAX_MAILBOX_AGE_SECONDS"] = 500
+    webapp.post("/v2/vacuum")
     assert len(models.Mailbox.query.all()) == 1
     assert len(models.Email.query.all()) == 0

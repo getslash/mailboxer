@@ -4,7 +4,7 @@ from flask import abort, Blueprint, jsonify, request
 
 from weber_utils import (dictify_model, paginate_query, paginated_view,
                          takes_schema_args)
-
+from .app import app
 from .models import *
 
 blueprint = Blueprint("v2", __name__)
@@ -39,11 +39,7 @@ def list_unread_mailbox_emails(address):
 
 @blueprint.route("/vacuum", methods=["post"])
 def vacuum_old_mailboxes():
-    max_age_seconds = request.args.get("max_age_seconds")
-    try:
-        max_age_seconds = int(max_age_seconds)
-    except (ValueError, TypeError):
-        abort(httplib.BAD_REQUEST)
+    max_age_seconds = app.config["MAX_MAILBOX_AGE_SECONDS"]
 
     threshold = datetime.datetime.utcnow() - datetime.timedelta(seconds=max_age_seconds)
 
