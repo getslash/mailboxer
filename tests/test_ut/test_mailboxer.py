@@ -22,7 +22,7 @@ def test_get_all_emails(mailboxer, recipient, emails):
         assert r.fromaddr == e.fromaddr
 
 def test_get_mailboxes_pagination(webapp, recipients, page_size):
-    result = webapp.get("/v2/mailboxes?page_size={0}".format(page_size)).json()
+    result = webapp.get("/v2/mailboxes?page_size={0}".format(page_size))
     assert result["metadata"]["total_num_pages"] == 1
     assert result["metadata"]["total_num_objects"] == len(recipients)
 

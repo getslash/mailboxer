@@ -45,4 +45,4 @@ def vacuum_old_mailboxes():
 
     Mailbox.query.filter(Mailbox.last_activity < threshold).delete()
     db.session.commit()
-    return "ok"
+    return jsonify({})
