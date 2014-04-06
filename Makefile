@@ -51,7 +51,7 @@ src_pkg.tar:
 test: env
 	.env/bin/py.test tests/test_ut
 
-travis_test: travis_system_install test deploy_localhost_travis
+travis_test: travis_system_install deploy_localhost_travis test
 	.env/bin/py.test tests/ --www-port=80
 
 travis_system_install:
