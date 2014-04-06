@@ -47,7 +47,6 @@ def vacuum_old_mailboxes():
 
     threshold = datetime.datetime.utcnow() - datetime.timedelta(seconds=max_age_seconds)
 
-    for m in Mailbox.query.filter(Mailbox.last_activity < threshold):
-        db.session.delete(m)
+    Mailbox.query.filter(Mailbox.last_activity < threshold).delete()
     db.session.commit()
     return "ok"
