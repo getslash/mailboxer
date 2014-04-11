@@ -1,7 +1,10 @@
-import itertools
 import datetime
+import itertools
 import os
+import shutil
+import subprocess
 import sys
+import tempfile
 import uuid
 
 import requests
@@ -10,11 +13,11 @@ from urlobject import URLObject as URL
 
 import pytest
 from flask_app import app, models
+from mailboxer import Mailboxer
 
 from .test_utils import send_mail
 
 #import from mailboxer-python
-from mailboxer import Mailboxer
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -25,6 +28,18 @@ def pytest_addoption(parser):
 def deployment_webapp_url(request):
     port = request.config.getoption("--www-port")
     return URL("http://127.0.0.1").with_port(port)
+
+@pytest.fixture(autouse=True, scope="session")
+def db_engine(request):
+    tmpdir = tempfile.mkdtemp()
+    subprocess.check_call("pg_ctl init -D {0} -w".format(tmpdir), shell=True)
+    subprocess.check_call("pg_ctl start -D {0} -w".format(tmpdir), shell=True)
+    @request.addfinalizer
+    def finalize():
+        subprocess.check_call("pg_ctl stop -D {0} -w -m immediate".format(tmpdir), shell=True)
+        shutil.rmtree(tmpdir)
+
+    subprocess.check_call("createdb mailboxer", shell=True)
 
 @pytest.fixture
 def webapp(request, db):
