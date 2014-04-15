@@ -8,6 +8,10 @@ testdb:
 	pg_ctl start -w -D /tmp/__mailboxerdb
 	createdb mailboxer
 
+frontend:
+	gulp
+.PHONY: frontend
+
 clean:
 	rm -rf .env
 	find . -name "*.pyc" -delete
