@@ -1,6 +1,6 @@
 default: test
 
-testserver: env frontend
+testserver: env
 	.env/bin/python manage.py testserver
 
 testdb:
@@ -64,3 +64,5 @@ db_revision: env
 db_migrate: env
 	.env/bin/alembic upgrade head
 
+activity: env
+	.env/bin/python scripts/activity.py

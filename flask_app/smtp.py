@@ -1,12 +1,19 @@
 import os
+import re
 import ssl
 import threading
+from contextlib import closing, contextmanager
+from smtplib import SMTP
+from socket import socket
 
 import logbook
 
-from .message_sink import Context
+from .message_sink import Context, DatabaseMessageSink
 
 _logger = logbook.Logger(__name__)
+
+_RECIPIENT_REGEX = re.compile("^rcpt to:\s*<([^>]+)>(?:\s+.*)?$", re.I)
+_MAIL_FROM_REGEX = re.compile("^mail from:\s*<([^>]+)>\s*$", re.I)
 
 class SMTPServingThread(threading.Thread):
 
@@ -16,18 +23,19 @@ class SMTPServingThread(threading.Thread):
         self._sink = message_sink
 
     def run(self):
-        try:
-            self._run()
-        except:
-            logbook.error("Error in SMTP Serving thread", exc_info=True)
-            raise
+        with closing(self._sock):
+            try:
+                self._run()
+            except:
+                logbook.error("Error in SMTP Serving thread", exc_info=True)
+                raise
 
     def _run(self):
 
         self._sock.sendall("220 Mailboxer\r\n")
         self._running = True
+        ssl = False
         while self._running:
-            self.ctx = Context()
 
             helo_line = self._sock.recv_line()
             if helo_line.strip().lower() == "quit":
@@ -40,23 +48,48 @@ class SMTPServingThread(threading.Thread):
                 self._sock.starttls()
                 helo_line = self._sock.recv_line()
                 self._send_ok()
+                ssl = True
                 line = self._sock.recv_line()
-                assert not self.ctx.ssl
-                self.ctx.ssl = True
-            self.ctx.fromaddr = line.split(":", 1)[1].strip()[1:-1]
-            self._send_ok()
-            line = self._sock.recv_line()
-            while line.lower().startswith("rcpt to:"):
-                self.ctx.recipients.append(line.split(":", 1)[1].strip()[1:-1])
+            while self._running:
+                ctx = Context()
+                ctx.ssl = ssl
+                ctx.fromaddr = self._parse_mail_from_line(line)
                 self._send_ok()
                 line = self._sock.recv_line()
-            assert line.lower().strip() == "data"
-            self._send_line("354 End data with <CR><LF>.<CR><LF>")
-            self.ctx.data = self._sock.recv_until("\r\n.\r\n")
-            self._send_ok()
-            self._sink.save_message(self.ctx)
+                while line.lower().startswith("rcpt to:"):
+                    logbook.debug("Handling recipient line: {!r}", line)
+                    recipient = self._parse_recipient(line)
+                    logbook.debug("Recipient is {}", recipient)
+                    if recipient is None:
+                        self._send_error(555, "Recipient not recognized")
+                        return
+                    ctx.recipients.append(recipient)
+                    self._send_ok()
+                    line = self._sock.recv_line()
+                assert line.lower().strip() == "data"
+                self._send_line("354 End data with <CR><LF>.<CR><LF>")
+                ctx.data = self._sock.recv_until("\r\n.\r\n")
+                self._send_ok()
+                self._sink.save_message(ctx)
+                line = self._sock.recv_line()
+                if not line:
+                    break
 
-        self._sock.close()
+
+    def _parse_recipient(self, line):
+        logbook.debug("Handling recipients: {}", line)
+        match = _RECIPIENT_REGEX.match(line)
+        if not match:
+            logbook.error("Invalid recipient line received")
+            return None
+        return match.groups()[0]
+
+    def _parse_mail_from_line(self, line):
+        match = _MAIL_FROM_REGEX.match(line)
+        if not match:
+            logbook.error("Invalid MAIL FROM line: {!r}", line)
+            return None
+        return match.groups()[0]
 
     def _send_extensions_list_and_ok(self):
         self._send_line("250-Hi, Mailboxer here")
@@ -65,6 +98,9 @@ class SMTPServingThread(threading.Thread):
 
     def _send_ok(self):
         self._send_line("250 ok")
+
+    def _send_error(self, code, error="Error"):
+        self._send_line("{0} {1}".format(code, error))
 
     def _send_line(self, line):
         self._sock.sendall(line + "\r\n")
@@ -124,3 +160,36 @@ class SocketHelper(object):
 
 class ProtocolError(Exception):
     pass
+
+@contextmanager
+def smtpd_context():
+
+    sock = socket()
+    sock.bind(("127.0.0.1", 0))
+    sock.listen(1)
+
+    _, server_port = sock.getsockname()
+
+    thread = ListenerThread(sock, DatabaseMessageSink())
+    thread.start()
+
+    client = SMTP("127.0.0.1", server_port)
+    try:
+        yield client
+        client.quit()
+    finally:
+        thread.join()
+        sock.close()
+
+class ListenerThread(threading.Thread):
+
+    def __init__(self, sock, sink):
+        super(ListenerThread, self).__init__()
+        self.sock = sock
+        self.sink = sink
+
+    def run(self):
+        p, a = self.sock.accept()
+        thread = SMTPServingThread(p, self.sink)
+        thread.start()
+        thread.join()

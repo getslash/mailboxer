@@ -20,3 +20,5 @@
   action: template src=../templates/supervisor_uwsgi.j2 dest=/etc/supervisor/conf.d/{{app_name}}-wsgi.conf
   register: supervisor_conf
   notify: restart supervisor
+- name: vacuum cron job
+  cron: name="Vacuum unused mailboxes" minute="*/5" job="curl -X POST http://127.0.0.1/api/v2/vacuum 2>&1 | logger"
