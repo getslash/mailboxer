@@ -1,9 +1,11 @@
+import calendar
 import httplib
 
 from flask import abort, Blueprint, jsonify, request
 
 from weber_utils import (dictify_model, paginate_query, paginated_view,
                          takes_schema_args)
+
 from .app import app
 from .models import *
 
@@ -17,9 +19,16 @@ def create_mailbox(address):
     db.session.commit()
     return jsonify(dictify_model(mailbox))
 
+def _render_mailbox(mailbox):
+    timestamp = calendar.timegm(mailbox.last_activity.utctimetuple())
+    return {
+        "address": mailbox.address,
+        "last_activity": timestamp,
+        "will_delete": timestamp + app.config["MAX_MAILBOX_AGE_SECONDS"],
+    }
 
 @blueprint.route("/mailboxes")
-@paginated_view
+@paginated_view(renderer=_render_mailbox)
 def list_mailboxes():
     return Mailbox.query
 

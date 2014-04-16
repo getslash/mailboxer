@@ -1,12 +1,11 @@
 default: test
 
-testserver: env
+testserver: env frontend
 	.env/bin/python manage.py testserver
 
-testdb:
-	pg_ctl init -D /tmp/__mailboxerdb
-	pg_ctl start -w -D /tmp/__mailboxerdb
-	createdb mailboxer
+db:
+	createdb mailboxer || true
+	.env/bin/python manage.py create_db
 
 frontend: env
 	gulp

@@ -1,14 +1,25 @@
-<div class="container">
-</div>
-
-
-<div class="container">
-  <div class="container">
-    <div class="alert alert-success">
-      <h1>Status Report</h1>
-      <p><i class="fa fa-check-circle"></i> Font Awesome</p>
-      <p><i class="fa fa-check-circle"></i> Bootstrap</p>
-      <p><i class="fa fa-check-circle"></i> Ember.js</p>
-    </div>
+<div class="row">
+  <div class="col-sm-4">
+    {{#each content.mailboxes}}
+    <div class="mailbox">
+      <div class="mailbox-inner">
+        <div class="mailbox-header">
+          <i class="fa fa-inbox fa-2x"></i>
+        </div>
+        <div class="mailbox-details">
+          <div class="detail address">
+            {{address}}
+          </div>
+          <div class="detail">
+            Last activity {{last_activity_str}}
+          </div>
+          <div class="detail">
+            Will be deleted {{will_delete_str}}
+          </div>
+        </div>
+      </div>
+    {{/each}}
+  </div>
+  <div class="col-sm-8">
   </div>
 </div>

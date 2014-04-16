@@ -1,2 +1,41 @@
 @import 'bower_components/bootstrap-sass-official/vendor/assets/stylesheets/bootstrap.scss';
 @import 'bower_components/font-awesome/scss/font-awesome.scss';
+
+$offwhite: #fbfbfb;
+$offwhite-darker: #ddd;
+$detail-grayedout: gray;
+
+.mailbox {
+    display: table;
+    background: $offwhite;
+    border: 1px solid silver;
+    box-shadow: 2px 2px 2px silver;
+    margin: 0.1em;
+    background-image: 
+}
+
+.mailbox-inner {
+    display: table-row;
+}
+
+.mailbox-header {
+    display: table-cell;
+    padding: 0.5em;
+    vertical-align: middle;
+    background: $offwhite-darker;
+}
+
+.mailbox-details {
+    padding: 1em;
+}
+
+.mailbox-details .detail {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: $detail-grayedout;
+}
+
+.detail.address {
+    color: black;
+    font-weight: bold;
+}

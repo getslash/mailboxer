@@ -23,7 +23,8 @@ gulp.task("vendor", function() {
 
     var deps = [
         "./bower_components/jquery/dist/jquery.js",
-        "./bower_components/handlebars/handlebars.js"
+        "./bower_components/handlebars/handlebars.js",
+        "./bower_components/momentjs/moment.js"
     ];
 
     if (argv.production) {
