@@ -1,4 +1,4 @@
-var App = require('Ember').Application.create();
+var App = Ember.Application.create();
 
 App.IndexRoute = require('./routes/index.js');
 
