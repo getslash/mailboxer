@@ -22,7 +22,7 @@ from .test_utils import send_mail
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 def pytest_addoption(parser):
-    parser.addoption("--www-port", action="store", default=8080, type=int)
+    parser.addoption("--www-port", action="store", default=8000, type=int)
     parser.addoption("--no-setup-db", action="store_true", default=False)
 
 @pytest.fixture
