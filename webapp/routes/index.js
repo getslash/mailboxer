@@ -1,5 +1,3 @@
-Ember.TEMPLATES['index'] = require('../templates/index.hbs');
-
 var BaseRoute = require('./base.js');
 
 module.exports = BaseRoute.extend({
