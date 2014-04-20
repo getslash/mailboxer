@@ -1,6 +1,6 @@
 <div class="row">
   <div class="col-sm-4">
-    {{#each content.mailboxes}}
+    {{#each mailboxes}}
     <div class="mailbox">
       <div class="mailbox-inner">
         <div class="mailbox-header">
@@ -15,6 +15,9 @@
           </div>
           <div class="detail">
             Will be deleted {{will_delete_str}}
+          </div>
+    	  <div class="detail">
+            Last updated: {{lastUpdated}}
           </div>
         </div>
       </div>

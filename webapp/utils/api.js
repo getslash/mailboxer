@@ -1,5 +1,4 @@
-module.exports = Ember.Route.extend({
-
+module.exports = Ember.Object.extend({
     api: function(method, path, data) {
         var self = this;
         return new Ember.RSVP.Promise(function(resolve, reject) {
@@ -23,4 +22,4 @@ module.exports = Ember.Route.extend({
         return this.api("POST", path, data);
     }
 
-});
+}).create();
