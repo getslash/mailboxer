@@ -18,7 +18,7 @@ from mailboxer import Mailboxer
 
 parser = argparse.ArgumentParser(usage="%(prog)s [options] args...")
 parser.add_argument("--smtp-port", default=None, type=int)
-parser.add_argument("--port", default=8080)
+parser.add_argument("--port", default=8000)
 
 
 class Application(object):
