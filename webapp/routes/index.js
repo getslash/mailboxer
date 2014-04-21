@@ -8,7 +8,7 @@ App.MailboxesModel = Ember.Object.extend({
     refresh: function() {
         var self = this;
 
-        return api.GET("mailboxes").then(function(data) {
+        return api.GET("mailboxes?sort=-last_activity").then(function(data) {
 
             self.set("mailboxes", []);
 

@@ -3,7 +3,7 @@ import httplib
 
 from flask import abort, Blueprint, jsonify, request
 
-from weber_utils import (dictify_model, paginate_query, paginated_view,
+from weber_utils import (dictify_model, paginate_query, paginated_view, sorted_view,
                          takes_schema_args)
 
 from .app import app
@@ -29,6 +29,7 @@ def _render_mailbox(mailbox):
 
 @blueprint.route("/mailboxes")
 @paginated_view(renderer=_render_mailbox)
+@sorted_view(allowed_fields=["last_activity", "id"])
 def list_mailboxes():
     return Mailbox.query
 
