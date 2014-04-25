@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 def pytest_addoption(parser):
     parser.addoption("--www-port", action="store", default=8000, type=int)
-    parser.addoption("--no-setup-db", action="store_true", default=False)
+    parser.addoption("--setup-db", action="store_true", default=False)
 
 @pytest.fixture
 def deployment_webapp_url(request):
@@ -32,7 +32,7 @@ def deployment_webapp_url(request):
 
 @pytest.fixture(autouse=True, scope="session")
 def db_engine(request):
-    if request.config.getoption("--no-setup-db"):
+    if not request.config.getoption("--setup-db"):
         return
     tmpdir = tempfile.mkdtemp()
     subprocess.check_call("pg_ctl init -D {0} -w".format(tmpdir), shell=True)
