@@ -29,9 +29,11 @@ class DatabaseMessageSink(MessageSink):
         email = None
         now = datetime.datetime.utcnow()
         assert ctx.recipients
+        db.session.flush()
         for mailbox in Mailbox.query.filter(Mailbox.address.in_(ctx.recipients)):
             email = Email(fromaddr=ctx.fromaddr, message=ctx.data, sent_via_ssl=ctx.ssl, mailbox_id=mailbox.id)
             mailbox.last_activity = now
+            _logger.debug("saving email to {}", mailbox)
             db.session.add(mailbox)
             db.session.add(email)
         db.session.commit()

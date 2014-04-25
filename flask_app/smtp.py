@@ -26,6 +26,8 @@ class SMTPServingThread(threading.Thread):
         with closing(self._sock):
             try:
                 self._run()
+            except EOFError:
+                logbook.error("Client connection unexpecedly closed.")
             except:
                 logbook.error("Error in SMTP Serving thread", exc_info=True)
                 raise
@@ -70,8 +72,9 @@ class SMTPServingThread(threading.Thread):
                 self._send_line("354 End data with <CR><LF>.<CR><LF>")
                 ctx.data = self._sock.recv_until("\r\n.\r\n")
                 self._send_ok()
+                _logger.info("Successfully processed message to {}", ctx.recipients)
                 self._sink.save_message(ctx)
-                line = self._sock.recv_line()
+                line = self._sock.recv_line(allow_eof=True)
                 if not line:
                     break
 
@@ -100,6 +103,7 @@ class SMTPServingThread(threading.Thread):
         self._send_line("250 ok")
 
     def _send_error(self, code, error="Error"):
+        _logger.error("Sending error {} ({}) to client", code, error)
         self._send_line("{0} {1}".format(code, error))
 
     def _send_line(self, line):
@@ -122,8 +126,8 @@ class SocketHelper(object):
     def starttls(self):
         self._sock = ssl.wrap_socket(self._sock, ssl_version=ssl.PROTOCOL_SSLv23, server_side=True, certfile=_CERT_FILE, keyfile=_KEY_FILE)
 
-    def recv_line(self):
-        return self.recv_until("\r\n")
+    def recv_line(self, allow_eof=False):
+        return self.recv_until("\r\n", allow_eof=allow_eof)
 
     def recv_exact(self, data, case_sensitive=True):
         length = len(data)
@@ -141,12 +145,15 @@ class SocketHelper(object):
         if data != received:
             raise ProtocolError("Got invalid string: {!r}".format(received))
 
-    def recv_until(self, token, include_token=False):
+    def recv_until(self, token, include_token=False, allow_eof=False):
         while token not in self._resid:
             data = self._sock.recv(_BUFF_SIZE)
             _logger.debug(" --> {!r}", data)
             if not data:
-                raise EOFError("End of data encountered")
+                if allow_eof:
+                    return self._resid
+                else:
+                    raise EOFError("End of data encountered")
             self._resid += data
 
         returned, self._resid = self._resid.split(token, 1)

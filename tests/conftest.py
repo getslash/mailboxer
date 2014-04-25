@@ -22,6 +22,7 @@ from .test_utils import send_mail
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 def pytest_addoption(parser):
+    parser.addoption("--smtp-port", action="store", default=2525, type=int)
     parser.addoption("--www-port", action="store", default=8000, type=int)
     parser.addoption("--setup-db", action="store_true", default=False)
 
@@ -29,6 +30,10 @@ def pytest_addoption(parser):
 def deployment_webapp_url(request):
     port = request.config.getoption("--www-port")
     return URL("http://127.0.0.1").with_port(port)
+
+@pytest.fixture
+def deployment_smtp_port(request):
+    return request.config.getoption("--smtp-port")
 
 @pytest.fixture(autouse=True, scope="session")
 def db_engine(request):
