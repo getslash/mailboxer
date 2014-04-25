@@ -6,4 +6,4 @@ unix_socket_name: "/tmp/{{app_name}}-wsgi.sock"
 http_port: 80
 # misc
 webapp_archive_location: /tmp/src.tar
-num_regular_backends: 4
+num_regular_backends: 16

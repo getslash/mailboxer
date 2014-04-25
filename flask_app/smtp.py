@@ -27,7 +27,7 @@ class SMTPServingThread(threading.Thread):
             try:
                 self._run()
             except EOFError:
-                logbook.error("Client connection unexpecedly closed.")
+                pass
             except:
                 logbook.error("Error in SMTP Serving thread", exc_info=True)
                 raise

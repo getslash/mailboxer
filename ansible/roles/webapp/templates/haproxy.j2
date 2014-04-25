@@ -1,5 +1,5 @@
 global
-    maxconn 256
+    maxconn 1024
  
 defaults
     mode tcp
@@ -14,5 +14,5 @@ frontend smtp-in
  
 backend smtpd
     {% for i in range(num_regular_backends) %}
-    server smtpd{{i}} 127.0.0.1:{{10000+i}} maxconn 32
+    server smtpd{{i}} 127.0.0.1:{{10000+i}} maxconn 256
     {% endfor %}
