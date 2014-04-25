@@ -122,21 +122,22 @@ def page_size(request):
     return 100
 
 @pytest.fixture
-def recipient(mailboxer):
-    return make_recipient(mailboxer)
+def recipient(request, mailboxer):
+    return make_recipient(request, mailboxer)
 
 @pytest.fixture
-def recipients(mailboxer):
-    return [make_recipient(mailboxer) for i in range(5)]
+def recipients(request, mailboxer):
+    return [make_recipient(request, mailboxer) for i in range(5)]
 
-def make_recipient(mailboxer):
+def make_recipient(request, mailboxer):
     recipient = Recipient()
-    mailboxer.create_mailbox(recipient.address)
+    mailbox = mailboxer.create_mailbox(recipient.address)
+    request.addfinalizer(mailbox.delete)
     return recipient
 
 @pytest.fixture
-def inactive_recipient(mailboxer):
-    returned = recipient(mailboxer)
+def inactive_recipient(request, mailboxer):
+    returned = recipient(request, mailboxer)
     mailbox = returned.get_mailbox_obj()
     mailbox.last_activity -= datetime.timedelta(seconds=1000)
     models.db.session.add(mailbox)

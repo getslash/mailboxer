@@ -33,6 +33,12 @@ def _render_mailbox(mailbox):
 def list_mailboxes():
     return Mailbox.query
 
+@blueprint.route("/mailboxes/<address>", methods=["delete"])
+def delete_mailbox(address):
+    Mailbox.query.filter(Mailbox.address==address).delete()
+    db.session.commit()
+    return jsonify(_SUCCESS)
+
 @blueprint.route("/mailboxes/<address>/emails")
 @paginated_view
 def list_all_mailbox_emails(address):
@@ -55,4 +61,6 @@ def vacuum_old_mailboxes():
 
     Mailbox.query.filter(Mailbox.last_activity < threshold).delete()
     db.session.commit()
-    return jsonify({})
+    return jsonify(_SUCCESS)
+
+_SUCCESS = {"result": "success"}
