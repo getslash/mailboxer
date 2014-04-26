@@ -4,3 +4,8 @@ python:
 script: make travis_test
 addons:
   postgresql: "9.3"
+after_failure: 
+  - sudo supervisorctl status
+  - tail -100 /var/log/mailboxer-wsgi.log
+  - tail -100 /var/log/mailboxer-smtpd.log
+  
