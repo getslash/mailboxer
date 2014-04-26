@@ -7,3 +7,4 @@ http_port: 80
 # misc
 webapp_archive_location: /tmp/src.tar
 num_regular_backends: 16
+smtp_port: 25

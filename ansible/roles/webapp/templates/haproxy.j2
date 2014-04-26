@@ -9,7 +9,7 @@ defaults
  
 frontend smtp-in
     mode tcp
-    bind *:25
+    bind *:{{smtp_port}}
     default_backend smtpd
  
 backend smtpd
