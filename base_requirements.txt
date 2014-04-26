@@ -6,3 +6,4 @@ pytest
 psycopg2
 requests>=1.2
 URLObject
+waiting

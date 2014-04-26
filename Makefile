@@ -41,8 +41,7 @@ deploy_localhost: src_pkg.tar env
 
 deploy_localhost_travis: src_pkg.tar env
 	.env/bin/ansible-playbook -i ansible/inventories/localhost -c local --sudo ansible/site.yml -e smtp_port=2525
-	.env/bin/python scripts/wait_for_local_port.py 80
-	.env/bin/python scripts/wait_for_local_port.py 2525
+	.env/bin/python scripts/wait_for_travis.py
 
 deploy_vagrant: env src_pkg.tar vagrant_up
 	ANSIBLE_HOST_KEY_CHECKING=False .env/bin/ansible-playbook -i ansible/inventories/vagrant ansible/site.yml
