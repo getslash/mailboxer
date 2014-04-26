@@ -71,9 +71,9 @@ class SMTPServingThread(threading.Thread):
                 assert line.lower().strip() == "data"
                 self._send_line("354 End data with <CR><LF>.<CR><LF>")
                 ctx.data = self._sock.recv_until("\r\n.\r\n")
-                self._send_ok()
                 _logger.info("Successfully processed message to {}", ctx.recipients)
                 self._sink.save_message(ctx)
+                self._send_ok()
                 line = self._sock.recv_line(allow_eof=True)
                 if not line:
                     break
