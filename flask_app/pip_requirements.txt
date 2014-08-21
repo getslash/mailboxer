@@ -6,6 +6,7 @@ Flask-SQLAlchemy
 gevent
 Logbook>=0.6.0
 PyYAML
+requests
 urlobject
 uwsgi
 weber-utils>=1.2.0

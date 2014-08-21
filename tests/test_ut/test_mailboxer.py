@@ -1,5 +1,5 @@
-import datetime
-import logging
+import pytest
+import requests
 
 from flask_app import models
 
@@ -14,6 +14,10 @@ def test_incoming_message_no_mailbox_match():
     send_mail("fromaddr@somedomain.com", ["blap@bloop.com"], "message")
     assert models.Email.query.count() == 0
 
+@pytest.mark.parametrize('subpath', ['emails', 'unread_emails'])
+def test_unknown_mailbox_emails_not_found(webapp, subpath):
+    resp = webapp.get('/v2/mailboxes/nonexisting/' + subpath, raw_response=True)
+    assert resp.status_code == requests.codes.not_found
 
 def test_get_all_emails(mailboxer, recipient, emails):
     received = mailboxer.get_emails(recipient.address)

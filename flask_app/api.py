@@ -1,5 +1,7 @@
 import calendar
-import httplib
+import requests
+
+from sqlalchemy.orm.exc import NoResultFound
 
 from flask import abort, Blueprint, jsonify, request
 
@@ -42,16 +44,24 @@ def delete_mailbox(address):
 @blueprint.route("/mailboxes/<address>/emails")
 @paginated_view
 def list_all_mailbox_emails(address):
+    _check_mailbox_exists(address)
     return Email.query.join(Mailbox).filter(Mailbox.address==address).order_by(Email.timestamp)
 
 @blueprint.route("/mailboxes/<address>/unread_emails")
 def list_unread_mailbox_emails(address):
+    _check_mailbox_exists(address)
     query = Email.query.join(Mailbox).filter(Mailbox.address==address, Email.read==False).order_by(Email.timestamp)
     returned = paginate_query(query)
     if returned["result"]:
         Email.query.filter(Email.id.in_([obj["id"] for obj in returned["result"]])).update({Email.read: True}, synchronize_session="fetch")
     db.session.commit()
     return jsonify(returned)
+
+def _check_mailbox_exists(address):
+    try:
+        Mailbox.query.filter(Mailbox.address==address).one()
+    except NoResultFound:
+        abort(requests.codes.not_found)
 
 @blueprint.route("/vacuum", methods=["post"])
 def vacuum_old_mailboxes():

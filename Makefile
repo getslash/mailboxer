@@ -1,5 +1,9 @@
 default: test
 
+testdb:
+	pg_ctl init -D /tmp/test_db -w
+	pg_ctl start -D /tmp/test_db -w
+
 testserver: env
 	.env/bin/python manage.py testserver
 
