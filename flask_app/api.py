@@ -2,6 +2,7 @@ import calendar
 import requests
 
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.exc import IntegrityError
 
 from flask import abort, Blueprint, jsonify, request
 
@@ -18,7 +19,10 @@ blueprint = Blueprint("v2", __name__)
 def create_mailbox(address):
     mailbox = Mailbox(address=address)
     db.session.add(mailbox)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        abort(requests.codes.conflict)
     return jsonify(dictify_model(mailbox))
 
 def _render_mailbox(mailbox):

@@ -5,6 +5,10 @@ from flask_app import models
 
 from ..test_utils import send_mail
 
+def test_create_mailbox_twice(mailboxer, recipient):
+    with pytest.raises(requests.exceptions.HTTPError) as caught:
+        mailboxer.create_mailbox(recipient.address)
+    assert caught.value.response.status_code == requests.codes.conflict
 
 def test_get_mailboxes(webapp, recipient):
     [mailbox] = webapp.get_single_page("/v2/mailboxes")
