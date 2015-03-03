@@ -2,7 +2,7 @@ confetti
 fabric
 fabtools
 jinja2
-requests==1.0.0
+requests==1.1.0
 urlobject
 nose
 nose-testconfig
