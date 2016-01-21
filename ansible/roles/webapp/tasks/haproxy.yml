@@ -1,8 +1,0 @@
-- apt: pkg=haproxy state=latest update_cache=yes
-- file: path={{config_root}} state=directory owner={{app_name}} group={{app_name}}
-- template: src=../templates/supervisor_smtp.j2 dest=/etc/supervisor/conf.d/{{app_name}}-smtp.conf
-  notify: restart supervisor
-- template: src=../templates/haproxy.j2 dest={{deploy_root}}/config/haproxy.cfg
-  notify: restart supervisor
-  
-

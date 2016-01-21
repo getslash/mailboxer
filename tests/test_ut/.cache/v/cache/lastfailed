@@ -1,0 +1,9 @@
+{
+  "test_mailboxer.py::test_get_all_emails": true,
+  "test_mailboxer.py::test_incoming_message_no_mailbox_match": true,
+  "test_mailboxer.py::test_mailbox_activity_gets_updated": true,
+  "test_mailboxer.py::test_send_receive_email": true,
+  "test_mailboxer.py::test_send_receive_unreda_email": true,
+  "test_mailboxer.py::test_tls": true,
+  "test_mailboxer.py::test_vacuum": true
+}

@@ -19,7 +19,6 @@ parser.add_argument("-p", "--port", default=25, type=int)
 
 def main(args):
     if not args.debug:
-        logbook.NullHandler(bubble=False).push_application()
         logbook.StreamHandler(sys.stderr, level=logbook.INFO, bubble=False).push_application()
     with closing(socket.socket()) as s:
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

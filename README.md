@@ -51,11 +51,9 @@ Mailboxer can be instructed to abuse mail senders by closing connections unexpec
 Mailboxer can sustain very high loads of email messages. The email workers are balanced by *haproxy*, and can be scaled to take more resources on more heavy duty servers.
 
 
-
 ## Vacuuming
 
 Mailboxes automatically get cleaned up after a week of inactivity
-
 
 
 ## It's free!

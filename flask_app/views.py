@@ -1,8 +1,13 @@
-from flask import send_from_directory
+import os
 
-from .app import app
+from flask import send_from_directory, Blueprint, current_app
+import sys
 
 
-@app.route("/")
+views = Blueprint("views", __name__, template_folder="templates")
+
+@views.route("/")
 def index():
-    return send_from_directory(app.static_folder, "index.html")
+    if not os.path.isdir(current_app.static_folder):
+        return send_from_directory(os.path.join(os.path.dirname(__file__), '..', 'webapp', 'app'), 'index.html')
+    return send_from_directory(current_app.static_folder, 'index.html')

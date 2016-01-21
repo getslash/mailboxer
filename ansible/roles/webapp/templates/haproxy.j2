@@ -13,6 +13,6 @@ frontend smtp-in
     default_backend smtpd
  
 backend smtpd
-    {% for i in range(num_regular_backends) %}
+    {% for i in range(num_smtpd_processes) %}
     server smtpd{{i}} 127.0.0.1:{{10000+i}} maxconn 256
     {% endfor %}

@@ -1,0 +1,6 @@
+jinja2
+click>=2.0
+colorama
+requests
+Logbook>=0.6.0
+PyYAML
