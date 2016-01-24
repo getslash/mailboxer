@@ -180,6 +180,7 @@ def _run_fulltest(extra_args=()):
 
 
 @cli.command('travis-test')
+@requires_env('app', 'develop')
 def travis_test():
     with _temporary_db():
         _run_unittest()
