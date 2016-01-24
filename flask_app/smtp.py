@@ -59,8 +59,10 @@ class SMTPServingThread(threading.Thread):
                 ctx = Context()
                 ctx.ssl = ssl
                 ctx.fromaddr = self._parse_mail_from_line(line)
-                if ctx.fromaddr is not None:
-                    ctx.fromaddr = ctx.fromaddr.decode('utf-8')
+                if ctx.fromaddr is None:
+                    self._send_error(501)
+                    continue
+                ctx.fromaddr = ctx.fromaddr.decode('utf-8')
                 self._send_ok()
                 line = self._sock.recv_line()
                 while line.lower().startswith(b"rcpt to:"):

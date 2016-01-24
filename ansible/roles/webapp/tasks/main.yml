@@ -94,5 +94,9 @@
   shell: systemctl restart {{item}}
   with_items: service_names
   when: systemd_change.changed or sources.changed or configuration.changed
+- name: restart the service if code changes
+  shell: systemctl restart {{app_name}}-smtp@{{item}}
+  with_sequence: count={{num_smtpd_processes}}
+  when: systemd_change.changed or sources.changed or configuration.changed
 - name: try to get local page
   shell: curl http://localhost/
