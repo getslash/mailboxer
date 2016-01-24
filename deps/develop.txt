@@ -2,4 +2,4 @@ Flask-Loopback
 pytest
 tmuxp
 livereload
-mailboxer
+mailboxer-python
