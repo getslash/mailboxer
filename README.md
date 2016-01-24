@@ -1,5 +1,5 @@
 
-![Mailboxer Logo](https://raw.githubusercontent.com/vmalloc/mailboxer/master/static/img/mailboxer-medium.png ) 
+![Mailboxer Logo](https://raw.githubusercontent.com/vmalloc/mailboxer/master/webapp/public/assets/img/mailboxer-medium.png ) 
 
 ![Build Status](https://secure.travis-ci.org/vmalloc/mailboxer.png?branch=master ) 
 
