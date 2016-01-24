@@ -181,7 +181,7 @@ def _run_fulltest(extra_args=()):
 
 @cli.command('travis-test')
 @requires_env('app', 'develop')
-def travis_test():
+def travis_test():j 
     with _temporary_db():
         _run_unittest()
 
@@ -196,7 +196,7 @@ def _temporary_db():
 
     app = create_app()
 
-    with _migrate_context(app) as migrate:
+    with _migrate_context() as migrate:
         migrate.upgrade()
     yield
     with app.app_context():
