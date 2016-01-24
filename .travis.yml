@@ -8,4 +8,5 @@ services:
   - redis-server
 install:
   - pip install virtualenv
+  - python manage.py db upgrade
 script: python manage.py travis-test
