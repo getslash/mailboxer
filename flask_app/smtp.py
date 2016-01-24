@@ -111,7 +111,7 @@ class SMTPServingThread(threading.Thread):
 
     def _send_error(self, code, error="Error"):
         _logger.error("Sending error {} ({}) to client", code, error)
-        self._send_line(b"{0} {1}".format(code, error))
+        self._send_line("{0} {1}".format(code, error).encode('utf-8'))
 
     def _send_line(self, line):
         self._sock.sendall(line + b"\r\n")
