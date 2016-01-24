@@ -1,5 +1,6 @@
 #! /usr/bin/python
 from __future__ import print_function
+from contextlib import contextmanager
 import os
 import sys
 import time
@@ -152,7 +153,7 @@ def unittest():
 @requires_env("app", "develop")
 def _run_unittest():
     subprocess.check_call(
-        [from_env_bin("py.test"), "tests/test_ut"], cwd=from_project_root())
+        [from_env_bin("py.test"), "tests/"], cwd=from_project_root())
 
 
 @cli.command()
@@ -179,10 +180,28 @@ def _run_fulltest(extra_args=()):
 
 
 @cli.command('travis-test')
+@requires_env('app', 'develop')
 def travis_test():
+    with _temporary_db():
+        _run_unittest()
+
+
+@contextmanager
+def _temporary_db():
+    from flask_app.app import create_app
+    from flask_app import models
+    from _lib.db import _migrate_context
+
     subprocess.check_call('createdb {0}'.format(APP_NAME), shell=True)
-    _run_unittest()
-    subprocess.check_call('dropdb {0}'.format(APP_NAME), shell=True)
+
+    app = create_app()
+
+    with _migrate_context() as migrate:
+        migrate.upgrade()
+    yield
+    with app.app_context():
+        models.db.drop_all()
+
 
 
 def _wait_for_travis_availability():

@@ -1,9 +1,11 @@
 language: python
 sudo: false
 python:
-  - 3.4
+  - 3.5
 addons:
   postgresql: "9.4"
+services:
+  - redis-server
 install:
   - pip install virtualenv
 script: python manage.py travis-test
