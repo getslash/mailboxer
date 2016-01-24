@@ -8,6 +8,4 @@ services:
   - redis-server
 install:
   - pip install virtualenv
-  - createdb -E utf-8 mailboxer
-  - python manage.py db upgrade
 script: python manage.py travis-test
