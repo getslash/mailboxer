@@ -18,22 +18,26 @@ _MAIL_FROM_REGEX = re.compile(b"^mail from:\s*<([^>]+)>\s*$", re.I)
 
 class SMTPServingThread(threading.Thread):
 
-    def __init__(self, sock, message_sink):
+    def __init__(self, sock, message_sink, semaphore):
         super(SMTPServingThread, self).__init__()
         self._sock = SocketHelper(sock)
         self._sink = message_sink
         self._app = create_app()
+        self._semaphore = semaphore
 
     def run(self):
-        with closing(self._sock), logbook.StderrHandler():
-            try:
-                with self._app.app_context():
-                    self._run()
-            except EOFError:
-                pass
-            except:
-                logbook.error("Error in SMTP Serving thread", exc_info=True)
-                raise
+        try:
+            with closing(self._sock), logbook.StderrHandler():
+                try:
+                    with self._app.app_context():
+                        self._run()
+                except EOFError:
+                    pass
+                except:
+                    logbook.error("Error in SMTP Serving thread", exc_info=True)
+                    raise
+        finally:
+            self._semaphore.release()
 
     def _run(self):
 
@@ -175,6 +179,8 @@ class SocketHelper(object):
 class ProtocolError(Exception):
     pass
 
+_MAX_NUM_THREADS = 100
+
 @contextmanager
 def smtpd_context():
 
@@ -184,7 +190,9 @@ def smtpd_context():
 
     _, server_port = sock.getsockname()
 
-    thread = ListenerThread(sock, DatabaseMessageSink())
+    semaphore = threading.Semaphore(_MAX_NUM_THREADS)
+
+    thread = ListenerThread(sock, DatabaseMessageSink(), semaphore)
     thread.start()
 
     client = SMTP("127.0.0.1", server_port)
@@ -197,13 +205,16 @@ def smtpd_context():
 
 class ListenerThread(threading.Thread):
 
-    def __init__(self, sock, sink):
+    def __init__(self, sock, sink, semaphore):
         super(ListenerThread, self).__init__()
         self.sock = sock
         self.sink = sink
+        self._semaphore = semaphore
 
     def run(self):
+        self._semaphore.acquire()
         p, a = self.sock.accept()
-        thread = SMTPServingThread(p, self.sink)
+
+        thread = SMTPServingThread(p, self.sink, self._semaphore)
         thread.start()
         thread.join()
