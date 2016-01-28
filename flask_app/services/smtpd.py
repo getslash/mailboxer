@@ -11,7 +11,7 @@ from contextlib import closing
 
 from .. import app # needed to prevent cyclic dependency
 from ..message_sink import DatabaseMessageSink
-from ..smtp import SMTPServingThread
+from ..smtp import SMTPServingThread, get_semaphore
 
 parser = argparse.ArgumentParser(usage="%(prog)s [options] args...")
 parser.add_argument("-d", "--debug", default=False, action="store_true")
@@ -29,10 +29,11 @@ def main(args):
         logbook.debug("Listening on port {}", args.port)
         s.listen(socket.SOMAXCONN)
         message_sink = DatabaseMessageSink()
+        semaphore = get_semaphore()
         while True:
             p, a = s.accept()
             logbook.debug("Incoming connection from {}", a)
-            thread = SMTPServingThread(p, message_sink)
+            thread = SMTPServingThread(p, message_sink, semaphore)
             thread.daemon = True
             thread.start()
 

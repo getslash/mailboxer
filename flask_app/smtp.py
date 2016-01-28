@@ -181,6 +181,9 @@ class ProtocolError(Exception):
 
 _MAX_NUM_THREADS = 100
 
+def get_semaphore():
+    return threading.Semaphore(_MAX_NUM_THREADS)
+
 @contextmanager
 def smtpd_context():
 
@@ -190,7 +193,7 @@ def smtpd_context():
 
     _, server_port = sock.getsockname()
 
-    semaphore = threading.Semaphore(_MAX_NUM_THREADS)
+    semaphore = get_semaphore()
 
     thread = ListenerThread(sock, DatabaseMessageSink(), semaphore)
     thread.start()
