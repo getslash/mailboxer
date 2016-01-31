@@ -47,15 +47,17 @@ class SMTPServingThread(threading.Thread):
                 self._send_line(b"221 Bye")
                 break
             self._send_extensions_list_and_ok()
-            line = self._sock.recv_line()
-            if line.strip().lower() == b"starttls":
-                self._send_line(b"220 Go ahead")
-                self._sock.starttls()
-                helo_line = self._sock.recv_line()
-                self._send_ok()
-                ssl = True
-                line = self._sock.recv_line()
             while self._running:
+                line = self._sock.recv_line()
+                if line.strip().lower() == b"starttls":
+                    if ssl:
+                        self._send_error(501)
+                        continue
+                    self._send_line(b"220 Go ahead")
+                    self._sock.starttls()
+                    helo_line = self._sock.recv_line()
+                    self._send_ok()
+                    ssl = True
                 ctx = Context()
                 ctx.ssl = ssl
                 ctx.fromaddr = self._parse_mail_from_line(line)
