@@ -4,14 +4,14 @@
 from __future__ import absolute_import
 
 import argparse
-import logbook
-import sys
 import socket
+import sys
 from contextlib import closing
 
-from .. import app # needed to prevent cyclic dependency
+import logbook
+
 from ..message_sink import DatabaseMessageSink
-from ..smtp import SMTPServingThread, get_semaphore
+from ..smtp import SMTPServerThread, get_semaphore
 
 parser = argparse.ArgumentParser(usage="%(prog)s [options] args...")
 parser.add_argument("-d", "--debug", default=False, action="store_true")
@@ -33,7 +33,7 @@ def main(args):
         while True:
             p, a = s.accept()
             logbook.debug("Incoming connection from {}", a)
-            thread = SMTPServingThread(p, message_sink, semaphore)
+            thread = SMTPServerThread(p, message_sink, semaphore)
             thread.daemon = True
             thread.start()
 
