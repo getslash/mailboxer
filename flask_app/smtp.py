@@ -17,6 +17,7 @@ _logger = logbook.Logger(__name__)
 _RECIPIENT_REGEX = re.compile(b"^rcpt to:\s*<([^>]+)>(?:\s+.*)?$", re.I)
 _MAIL_FROM_REGEX = re.compile(b"^mail from:\s*<([^>]+)>\s*$", re.I)
 
+
 class SMTPServingThread(threading.Thread):
 
     def __init__(self, sock, message_sink, semaphore):
@@ -28,7 +29,8 @@ class SMTPServingThread(threading.Thread):
 
     def run(self):
         try:
-            with closing(self._sock), logbook.StderrHandler():
+            with closing(self._sock), logbook.StderrHandler() as h:
+                h.format_string = '{record.thread}|{record.channel}: {record.message}'
                 try:
                     with self._app.app_context():
                         self._run()
