@@ -1,5 +1,6 @@
 import os
 import re
+import time
 import ssl
 import threading
 from contextlib import closing, contextmanager
@@ -49,17 +50,23 @@ class SMTPServingThread(threading.Thread):
             helo_line = self._sock.recv_line()
             if helo_line.strip().lower() == b"quit":
                 self._send_line(b"221 Bye")
-                break
+                return
             self._send_extensions_list_and_ok()
-            line = self._sock.recv_line()
-            if line.strip().lower() == b"starttls":
-                self._send_line(b"220 Go ahead")
-                self._sock.starttls()
-                helo_line = self._sock.recv_line()
-                self._send_ok()
-                ssl = True
+            while True:
                 line = self._sock.recv_line()
-            while self._running:
+                if line.strip().lower() == 'quit':
+                    self._send_line(b"221 Bye")
+                    return
+
+                if line.strip().lower() == b"starttls":
+                    if ssl:
+                        self._send_error(501)
+                        continue
+                    self._send_line(b"220 Go ahead")
+                    self._sock.starttls()
+                    helo_line = self._sock.recv_line()
+                    self._send_ok()
+                    ssl = True
                 ctx = Context()
                 ctx.ssl = ssl
                 ctx.fromaddr = self._parse_mail_from_line(line)
@@ -85,9 +92,11 @@ class SMTPServingThread(threading.Thread):
                 _logger.info("Successfully processed message to {}", ctx.recipients)
                 self._sink.save_message(ctx)
                 self._send_ok()
-                line = self._sock.recv_line(allow_eof=True)
-                if not line:
-                    break
+                line = self._sock.recv_line()
+                if line.strip().lower() == b'quit':
+                    self._send_line(b'221 Bye')
+                    time.sleep(1)
+                return
 
 
     def _parse_recipient(self, line):
