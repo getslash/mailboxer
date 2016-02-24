@@ -104,7 +104,7 @@ class MailFromReceived(State):
 
         server.send((354, "End data with <CR><LF>.<CR><LF>"))
         ctx.data = server.sock.recv_until(b"\r\n.\r\n").decode('utf-8')
-        _logger.info("Successfully processed message to {}", ctx.recipients)
+        _logger.debug("Successfully processed message to {}", ctx.recipients)
         server.sink.save_message(ctx)
         server.send(_OK)
         return DataEnded()
@@ -121,17 +121,15 @@ class SMTPServerThread(threading.Thread):
         super(SMTPServerThread, self).__init__()
         self.sock = SocketHelper(sock)
         self.sink = message_sink
-        self._app = create_app()
         self._semaphore = semaphore
         self._running = True
 
     def run(self):
         try:
-            with closing(self.sock), logbook.StderrHandler() as h:
+            with closing(self.sock), logbook.StderrHandler(level=logbook.DEBUG) as h:
                 h.format_string = '{record.thread}|{record.channel}: {record.message}'
                 try:
-                    with self._app.app_context():
-                        self._run()
+                    self._run()
                 except EOFError:
                     pass
                 except:

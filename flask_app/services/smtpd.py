@@ -31,7 +31,10 @@ def main(args):
         message_sink = DatabaseMessageSink()
         semaphore = get_semaphore()
         while True:
-            p, a = s.accept()
+            try:
+                p, a = s.accept()
+            except KeyboardInterrupt:
+                break
             logbook.debug("Incoming connection from {}", a)
             thread = SMTPServerThread(p, message_sink, semaphore)
             thread.daemon = True
