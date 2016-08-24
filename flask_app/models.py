@@ -3,6 +3,7 @@ import datetime
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.security import UserMixin, RoleMixin
 
+from sqlalchemy import Index
 from sqlalchemy.orm import backref
 
 
@@ -25,6 +26,10 @@ class Email(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow, index=True)
     sent_via_ssl = db.Column(db.Boolean)
     read = db.Column(db.Boolean, default=False)
+
+    __table_args__ = (
+        Index('ix_mailbox_read_timestamp', 'mailbox_id', 'read', 'timestamp'),
+    )
 
 roles_users = db.Table('roles_users',
                        db.Column('user_id', db.Integer(), db.ForeignKey('user.id', ondelete='CASCADE')),
