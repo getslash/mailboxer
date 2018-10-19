@@ -1,0 +1,12 @@
+version: '3'
+services:
+  api:
+    image: getslash/mailboxer:testing
+    logging:
+      driver: json-file
+    ports:
+      - "8000:8000"
+      - "2525:2525"
+  db:
+    logging:
+      driver: json-file

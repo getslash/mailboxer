@@ -1,11 +1,28 @@
-language: python
-sudo: false
-python:
-  - 3.5
-addons:
-  postgresql: "9.4"
-services:
-  - redis-server
-install:
-  - pip install virtualenv
-script: python manage.py travis-test
+jobs:
+  include:
+    # TODO: restore this
+    # - stage: build
+    #   language: rust
+    #   rust: stable
+    #   before_script:
+    #     - rustup component add clippy-preview
+    #   script:
+    #     - cargo clippy
+    #     - cargo test
+    - stage: test
+      sudo: required
+      language: python
+      python: 3.6
+      services:
+        - docker
+      install:
+        - docker version
+        - docker build -t getslash/mailboxer:testing -f docker/Dockerfile .
+        - docker-compose -p mailboxer -f docker/docker-compose.yml -f docker/docker-compose-testing-override.yml up -d
+        - pip install pipenv
+        - pipenv install -d
+      script:
+        - MAILBOXER_SPAWN_SERVER=false pipenv run pytest tests && python scripts/travis_docker_publish.py
+      after_failure:
+        - docker ps
+        - docker logs mailboxer_api_1

@@ -1,5 +1,0 @@
-Flask-Loopback
-pytest
-tmuxp
-livereload
-mailboxer-python

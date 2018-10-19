@@ -2,18 +2,16 @@ import datetime
 import itertools
 import os
 import shutil
+import socket
 import subprocess
 import sys
 import tempfile
+import time
 import uuid
 
 import requests
-from flask.ext.loopback import FlaskLoopback
-from urlobject import URLObject as URL
-
+import yarl
 import pytest
-from flask_app import models
-from flask_app.app import create_app
 from mailboxer import Mailboxer
 
 from .test_utils import send_mail
@@ -23,78 +21,80 @@ from .test_utils import send_mail
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
-def pytest_addoption(parser):
-    parser.addoption("--smtp-port", action="store", default=2525, type=int)
-    parser.addoption("--www-port", action="store", default=8000, type=int)
-    parser.addoption("--setup-db", action="store_true", default=False)
+
+@pytest.fixture(scope="session", autouse=True)
+def mailboxer_process(smtp_port, webapp_port):
+    if os.environ.get('MAILBOXER_SPAWN_SERVER', 'true').lower() == 'true':
+        process = subprocess.Popen("cargo run", shell=True)
+        print("Started process", process.pid)
+    else:
+        process = None
+    check_connectivity(smtp_port, process)
+    check_connectivity(webapp_port, process)
+
+    try:
+        yield process
+    finally:
+        if process is not None:
+            process.terminate()
+            process.wait()
+    return process
+
+
+def check_connectivity(port, process, *, timeout=60):
+    end_time = time.time() + timeout
+    while process is None or  process.poll() is None:
+        try:
+            if port == 80:
+                requests.get(f"http://127.0.0.1:{port}")
+            else:
+                s = socket.socket()
+                s.connect(("127.0.0.1", port))
+        except socket.error:
+            if time.time() > end_time:
+                raise
+            time.sleep(0.1)
+        else:
+            break
+    if process is not None and process.poll() is not None:
+        raise RuntimeError("Process terminated!")
+    print('*** Port', port, 'is responsive')
+
+
+
+@pytest.fixture(scope="session")
+def webapp_url(request, webapp_port):
+    return yarl.URL.build(scheme="http", host="127.0.0.1", port=webapp_port)
+
+@pytest.fixture(scope="session")
+def webapp_port():
+    return int(os.environ.get('MAILBOXER_HTTP_PORT', 8000))
+
+@pytest.fixture(scope="session")
+def smtp_port(request):
+    return int(os.environ.get('MAILBOXER_SMTP_PORT', 2525))
 
 
 @pytest.fixture
-def deployment_webapp_url(request):
-    port = request.config.getoption("--www-port")
-    return URL("http://127.0.0.1").with_port(port)
-
-
-@pytest.fixture(autouse=True)
-def app_security_settings(webapp):
-    webapp.app.config["SECRET_KEY"] = "testing_key"
-    webapp.app.config["SECURITY_PASSWORD_SALT"] = webapp.app.extensions[
-        'security'].password_salt = "testing_salt"
-
-
-@pytest.fixture
-def deployment_smtp_port(request):
-    return request.config.getoption("--smtp-port")
-
-
-@pytest.fixture
-def webapp(request, flask_app):
-    returned = Webapp(flask_app)
-    returned.app.config["SECRET_KEY"] = "testing_key"
-    returned.app.config["TESTING"] = True
-    returned.activate()
-    request.addfinalizer(returned.deactivate)
+def webapp(request, webapp_url):
+    returned = Webapp(webapp_url)
     return returned
-
-
-@pytest.fixture(autouse=True, scope='function')
-def cleanup_db(flask_app):
-    with flask_app.app_context():
-        models.Mailbox.query.delete()
-        models.db.session.commit()
-
-
-@pytest.fixture
-def flask_app():
-    return create_app()
 
 
 @pytest.fixture
 def mailboxer(webapp):
-    return Mailboxer("http://{0}".format(webapp.hostname))
+    return Mailboxer(webapp.url)
 
 
-class Webapp(object):
+class Webapp:
 
-    def __init__(self, app):
-        super(Webapp, self).__init__()
-        self.app = app
-        self.loopback = FlaskLoopback(self.app)
-        self.hostname = str(uuid.uuid1())
-
-    def activate(self):
-        self.loopback.activate_address((self.hostname, 80))
-
-    def deactivate(self):
-        self.loopback.deactivate_address((self.hostname, 80))
+    def __init__(self, url):
+        super().__init__()
+        self.url = url
 
     def _request(self, method, path, *args, **kwargs):
         raw_response = kwargs.pop("raw_response", False)
-        if path.startswith("/"):
-            path = path[1:]
-            assert not path.startswith("/")
-        returned = requests.request(
-            method, "http://{0}/{1}".format(self.hostname, path), *args, **kwargs)
+        returned = requests.request(method, self.url / path, *args, **kwargs)
         if raw_response:
             return returned
 
@@ -103,7 +103,6 @@ class Webapp(object):
 
     def get_single_page(self, path):
         returned = self.get(path)
-        assert returned['metadata']['total_num_pages'] == 1
         assert returned['metadata']['page'] == 1
         return returned["result"]
 
@@ -151,26 +150,12 @@ def make_recipient(request, mailboxer):
     return recipient
 
 
-@pytest.fixture
-def inactive_recipient(request, mailboxer, flask_app):
-    with flask_app.app_context():
-        returned = recipient(request, mailboxer)
-        mailbox = returned.get_mailbox_obj()
-        mailbox.last_activity -= datetime.timedelta(seconds=1000)
-        models.db.session.add(mailbox)
-        models.db.session.commit()
-    return returned
-
-
 class Recipient(object):
 
     def __init__(self):
         super(Recipient, self).__init__()
         self.address = "recipient{}@some.domain.com".format(
             next(_id_generator))
-
-    def get_mailbox_obj(self):
-        return models.Mailbox.query.filter(models.Mailbox.address == self.address).one()
 
 
 @pytest.fixture

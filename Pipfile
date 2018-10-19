@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+requests = "*"
+flask = "*"
+yarl = "*"
+mailboxer-python = "*"
+logbook = "*"
+
+[dev-packages]
+pytest = "*"
+mailboxer-python = {editable = true, path = "./../mailboxer-python"}
+
+[requires]
+python_version = "3.7"

@@ -1,10 +1,10 @@
 import logbook
-
-from flask_app.smtp import smtpd_context
+from smtplib import SMTP
 
 
 def send_mail(fromaddr, recipients, message, secure=False):
-    with smtpd_context() as client:
+    with SMTP("localhost", 2525) as client:
+        client.set_debuglevel(1)
         try:
             client.ehlo()
             if secure:

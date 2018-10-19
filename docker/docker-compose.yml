@@ -1,0 +1,18 @@
+version: '3'
+services:
+  api:
+    image: getslash/mailboxer:unstable
+    environment:
+      - DATABASE_URL=postgres://mailboxer@db/mailboxer
+    logging:
+      driver: journald
+    ports:
+      - "80:8000"
+      - "25:2525"
+  db:
+    image: postgres:11.0
+    environment:
+      - POSTGRES_USER=mailboxer
+      - POSTGRES_DB=mailboxer
+    logging:
+      driver: journald
