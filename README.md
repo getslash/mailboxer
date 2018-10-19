@@ -46,11 +46,6 @@ Mailboxer supports the STARTTLS extension, and will also let you know by which m
 
 Mailboxer can be instructed to abuse mail senders by closing connections unexpectedly, sleeping and lagging, and more.
 
-## Robust
-
-Mailboxer can sustain very high loads of email messages. The email workers are balanced by *haproxy*, and can be scaled to take more resources on more heavy duty servers.
-
-
 ## Vacuuming
 
 Mailboxes automatically get cleaned up after a week of inactivity
@@ -58,31 +53,9 @@ Mailboxes automatically get cleaned up after a week of inactivity
 
 ## It's free!
 
-Mailboxer is distributed under the BSD 3-clause license, and is completely free to use, fork or modify.
+Mailboxer is distributed under the MIT license, and is completely free to use, fork or modify.
 
 
 # Installation
 
-First, clone the source files:
-
-```
-$ git clone https://github.com/vmalloc/mailboxer
-$ cd mailboxer
-```
-
-Then edit the production/staging server list in your organization
-
-```
-$ cat ansible/inventories/production
-[webapp]
-your.server.name.here ansible_ssh_user=root
-
-[db]
-your.server.name.here ansible_ssh_user=root
-```
-
-Then just deploy:
-
-```
-$ make deploy
-```
+TODO: add installation instructions
