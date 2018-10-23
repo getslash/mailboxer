@@ -58,4 +58,20 @@ Mailboxer is distributed under the MIT license, and is completely free to use, f
 
 # Installation
 
-TODO: add installation instructions
+1. Create a directory for the installation:
+
+``` shell
+$ mkdir /opt/mailboxer
+```
+
+2. Clone the source:
+
+``` shell
+$ git clone https://github.com/getslash/mailboxer /opt/mailboxer/src
+```
+
+3. Start with ``docker-compose`` (Make sure you have both `docker` and `docker-compose` installed)
+
+``` shell
+$ docker-compose -p mailboxer -f /opt/mailboxer/src/docker/docker-compose.yml up
+```
