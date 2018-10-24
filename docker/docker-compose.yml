@@ -4,7 +4,7 @@ services:
     image: getslash/mailboxer:latest
     environment:
       - DATABASE_URL=postgres://mailboxer@db/mailboxer
-      - SENTRY_DSN=
+      - "SENTRY_DSN=${SENTRY_DSN}"
     logging:
       driver: journald
     ports:
