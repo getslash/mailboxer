@@ -4,6 +4,7 @@
 
 extern crate actix;
 extern crate actix_web;
+extern crate sentry;
 #[macro_use]
 extern crate diesel;
 #[macro_use]
@@ -49,6 +50,9 @@ use web::make_app;
 
 fn main() {
     dotenv().ok();
+
+    let _guard = sentry::init(env::var("SENTRY_DSN").ok());
+    sentry::integrations::panic::register_panic_handler();
 
     Builder::new()
         .filter_module("mailboxer", log::LevelFilter::Debug)

@@ -6,6 +6,8 @@ services:
       - DATABASE_URL=postgres://mailboxer@db/mailboxer
     logging:
       driver: journald
+    environment:
+      - SENTRY_DSN=
     ports:
       - "80:8000"
       - "25:2525"
