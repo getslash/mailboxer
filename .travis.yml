@@ -1,10 +1,5 @@
 jobs:
   include:
-    - stage: build
-      language: rust
-      rust: stable
-      script:
-        - cargo test
     - stage: test
       sudo: required
       language: python

@@ -1,7 +1,7 @@
 FROM rust as builder
 
 ADD . /tmp/src
-RUN cd /tmp/src && rm -rf target && cargo test && cargo build --release
+RUN cd /tmp/src && rm -rf target && cargo test --release && cargo build --release
 
 
 FROM ubuntu:18.04
