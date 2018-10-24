@@ -2,6 +2,7 @@
 #![allow(proc_macro_derive_resolution_fallback)]
 #![deny(warnings)]
 
+extern crate actix;
 extern crate actix_web;
 #[macro_use]
 extern crate diesel;
@@ -30,8 +31,10 @@ mod results;
 mod schema;
 mod smtp;
 mod utils;
+mod vacuum;
 mod web;
 
+use actix::prelude::*;
 use actix_web::server;
 use diesel::r2d2::ConnectionManager;
 use dotenv::dotenv;
@@ -41,6 +44,7 @@ use smtp::SMTPSession;
 use std::env;
 use std::net::TcpListener;
 use utils::ConnectionPool;
+use vacuum::VacuumCleaner;
 use web::make_app;
 
 fn main() {
@@ -51,15 +55,23 @@ fn main() {
         .filter_module("actix_web", log::LevelFilter::Debug)
         .init();
 
+    debug!("Mailboxer starting...");
+
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let connmgr = r2d2::Pool::builder()
         .max_size(16)
         .build(ConnectionManager::new(database_url))
         .expect("Unable to initialize pool manager");
 
+    debug!("Running migrations...");
+
     run_migrations(&connmgr).expect("Unable to run migrations");
 
-    debug!("Mailboxer starting...");
+    debug!("Migrations complete. Starting system...");
+
+    let sys = System::new("mailboxer");
+
+    let _vacuum = VacuumCleaner::new(connmgr.clone()).start();
 
     let bind_addr = "0.0.0.0:2525";
     let listener = TcpListener::bind(bind_addr).unwrap();
@@ -83,7 +95,8 @@ fn main() {
         .bind("0.0.0.0:8000")
         .expect("Cannot bind port")
         .system_exit()
-        .run();
+        .start();
+    sys.run();
 }
 
 fn run_migrations(connmgr: &ConnectionPool) -> Result<(), Error> {
