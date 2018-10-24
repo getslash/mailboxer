@@ -70,8 +70,15 @@ $ mkdir /opt/mailboxer
 $ git clone https://github.com/getslash/mailboxer /opt/mailboxer/src
 ```
 
-3. Start with ``docker-compose`` (Make sure you have both `docker` and `docker-compose` installed)
+4. Copy the systemd unit file over to `/etc/systemd/system`:
 
 ``` shell
-$ docker-compose -p mailboxer -f /opt/mailboxer/src/docker/docker-compose.yml up
+$ cp /opt/mailboxer/src/deployment/mailboxer.service /etc/systemd/system/
+$ systemctl daemon-reload
 ```
+5. Start the service:
+
+```shell
+$ systemctl enable --now mailboxer.service
+```
+

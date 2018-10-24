@@ -13,9 +13,9 @@ use results::*;
 use schema::{email, mailbox};
 use std::time::{Duration, SystemTime};
 use utils::{ConnectionPool, LoggedResult};
+use vacuum::vacuum_old_mailboxes;
 
 const _PAGE_SIZE: usize = 1000;
-const _VACUUM_CUTOFF_SECS: u64 = 24 * 60 * 60 * 7; // one week
 
 #[derive(Deserialize)]
 pub struct NewMailbox {
@@ -45,9 +45,8 @@ pub fn make_inactive(
 
 #[cfg_attr(feature = "cargo-clippy", allow(needless_pass_by_value))]
 pub fn vacuum(pool: State<ConnectionPool>) -> Result<Success, MailboxerError> {
-    let cutoff = SystemTime::now() - Duration::from_secs(_VACUUM_CUTOFF_SECS);
-    diesel::delete(mailbox::table.filter(mailbox::columns::last_activity.lt(cutoff)))
-        .execute(&pool.get()?)
+    vacuum_old_mailboxes(&pool)
+        .map_err(|_| MailboxerError::InternalServerError)
         .log_errors()?;
     Ok(Success)
 }

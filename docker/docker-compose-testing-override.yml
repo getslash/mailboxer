@@ -1,6 +1,6 @@
 version: '3'
 services:
-  api:
+  backend:
     image: getslash/mailboxer:testing
     logging:
       driver: json-file

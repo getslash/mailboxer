@@ -1,9 +1,10 @@
 version: '3'
 services:
-  api:
+  backend:
     image: getslash/mailboxer:latest
     environment:
       - DATABASE_URL=postgres://mailboxer@db/mailboxer
+      - "SENTRY_DSN=${SENTRY_DSN}"
     logging:
       driver: journald
     ports:

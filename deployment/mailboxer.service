@@ -1,0 +1,15 @@
+[Unit]
+Description=Mailboxer e-mail Delivery Testing Service
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/mailboxer/src/
+ExecStartPre=-/usr/bin/docker-compose -f docker/docker-compose.yml -p mailboxer down
+ExecStart=/usr/bin/docker-compose  -f docker/docker-compose.yml -p mailboxer up -d
+ExecStop=/usr/bin/docker-compose -f docker/docker-compose.yml -p mailboxer down
+
+[Install]
+WantedBy=multi-user.target
