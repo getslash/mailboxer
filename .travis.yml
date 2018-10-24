@@ -3,10 +3,8 @@ jobs:
     - stage: build
       language: rust
       rust: stable
-      before_script:
-        - rustup component add clippy-preview
       script:
-        - cargo clippy && cargo test
+        - cargo test
     - stage: test
       sudo: required
       language: python
