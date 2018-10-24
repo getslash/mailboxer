@@ -21,4 +21,4 @@ jobs:
         - MAILBOXER_SPAWN_SERVER=false pipenv run pytest tests && python scripts/travis_docker_publish.py
       after_failure:
         - docker ps
-        - docker logs mailboxer_api_1
+        - docker logs mailboxer_backend_1
