@@ -1,6 +1,8 @@
 use diesel::pg::PgConnection;
 use diesel::r2d2::ConnectionManager;
+use failure::AsFail;
 use r2d2;
+use sentry::integrations::failure::capture_fail;
 use std::fmt::Debug;
 
 pub trait StartsWithIgnoreCase {
@@ -37,10 +39,11 @@ pub trait LoggedResult {
     fn log_errors(self) -> Self;
 }
 
-impl<T, E: Debug> LoggedResult for Result<T, E> {
+impl<T, E: AsFail + Debug> LoggedResult for Result<T, E> {
     fn log_errors(self) -> Self {
         self.map_err(|e| {
             error!("Error encountered: {:?}", e);
+            let _ = capture_fail(e.as_fail());
             e
         })
     }

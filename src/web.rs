@@ -1,9 +1,11 @@
 use actix_web::App;
 use api;
+use sentry_actix::SentryMiddleware;
 use utils::ConnectionPool;
 
 pub fn make_app(pool: ConnectionPool) -> App<ConnectionPool> {
     App::with_state(pool)
+        .middleware(SentryMiddleware::new())
         .prefix("/v2")
         .resource("/_debug/make_inactive/{address}", |r| {
             r.post().with(api::make_inactive)
