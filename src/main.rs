@@ -18,6 +18,7 @@ extern crate futures;
 extern crate log;
 extern crate native_tls;
 extern crate r2d2;
+extern crate sentry_actix;
 extern crate serde;
 #[macro_use]
 extern crate serde_json;
@@ -52,6 +53,7 @@ fn main() {
     dotenv().ok();
 
     let _guard = sentry::init(env::var("SENTRY_DSN").ok());
+    env::set_var("RUST_BACKTRACE", "1");
     sentry::integrations::panic::register_panic_handler();
 
     Builder::new()
