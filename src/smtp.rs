@@ -1,14 +1,15 @@
+use crate::schema::{email, mailbox};
+use crate::utils::{ConnectionPool, LoggedResult};
 use diesel;
 use diesel::prelude::*;
-use failure::Error;
+use failure::{format_err, Error};
+use log::{debug, error};
 use native_tls::{Identity, TlsAcceptor, TlsStream};
-use crate::schema::{email, mailbox};
 use std::io::{BufRead, BufReader, Write};
 use std::iter::once;
 use std::net::TcpStream;
 use std::ops::Deref;
 use std::time::SystemTime;
-use crate::utils::{ConnectionPool, LoggedResult};
 
 use crate::utils::StartsWithIgnoreCase;
 
@@ -182,7 +183,8 @@ impl SMTPSession {
                         email::columns::timestamp.eq(SystemTime::now()),
                         email::columns::message.eq(&data),
                         email::columns::sent_via_ssl.eq(self.tls_stream.is_some()),
-                    )).execute(&conn)
+                    ))
+                    .execute(&conn)
                     .log_errors()?;
 
                 diesel::update(mailbox::table.filter(mailbox::columns::id.eq(mailbox_id)))

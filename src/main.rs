@@ -1,29 +1,9 @@
-// TODO: remove this once diesel fixes https://github.com/diesel-rs/diesel/issues/1785
-#![allow(proc_macro_derive_resolution_fallback)]
 #![deny(warnings)]
 
-extern crate actix;
-extern crate actix_web;
-extern crate sentry;
 #[macro_use]
 extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
-extern crate dotenv;
-extern crate env_logger;
-#[macro_use]
-extern crate failure;
-extern crate futures;
-#[macro_use]
-extern crate log;
-extern crate native_tls;
-extern crate r2d2;
-extern crate sentry_actix;
-extern crate serde;
-#[macro_use]
-extern crate serde_json;
-#[macro_use]
-extern crate serde_derive;
 
 mod api;
 mod errors;
@@ -36,18 +16,19 @@ mod utils;
 mod vacuum;
 mod web;
 
+use crate::smtp::SMTPSession;
+use crate::utils::ConnectionPool;
+use crate::vacuum::VacuumCleaner;
+use crate::web::make_app;
 use actix::prelude::*;
 use actix_web::server;
 use diesel::r2d2::ConnectionManager;
 use dotenv::dotenv;
 use env_logger::Builder;
 use failure::Error;
-use crate::smtp::SMTPSession;
+use log::{debug, error};
 use std::env;
 use std::net::TcpListener;
-use crate::utils::ConnectionPool;
-use crate::vacuum::VacuumCleaner;
-use crate::web::make_app;
 
 fn main() {
     dotenv().ok();

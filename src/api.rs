@@ -1,3 +1,10 @@
+use crate::errors::MailboxerError;
+use crate::models::{Email, Mailbox};
+use crate::pagination::Pagination;
+use crate::results::*;
+use crate::schema::{email, mailbox};
+use crate::utils::{ConnectionPool, LoggedResult};
+use crate::vacuum::vacuum_old_mailboxes;
 use actix_web::{Json, Path, Query, Result, State};
 use diesel;
 use diesel::{
@@ -5,15 +12,9 @@ use diesel::{
     result::{DatabaseErrorKind::UniqueViolation, Error::DatabaseError},
     QueryDsl,
 };
-use crate::errors::MailboxerError;
 use failure::Error;
-use crate::models::{Email, Mailbox};
-use crate::pagination::Pagination;
-use crate::results::*;
-use crate::schema::{email, mailbox};
+use serde_derive::Deserialize;
 use std::time::{Duration, SystemTime};
-use crate::utils::{ConnectionPool, LoggedResult};
-use crate::vacuum::vacuum_old_mailboxes;
 
 const _PAGE_SIZE: usize = 1000;
 
@@ -35,7 +36,8 @@ pub fn make_inactive(
             .set(
                 mailbox::columns::last_activity
                     .eq(SystemTime::now() - Duration::from_secs(500 * 24 * 60 * 60)),
-            ).execute(&conn)
+            )
+            .execute(&conn)
             .log_errors()?;
         Ok(Success)
     } else {
