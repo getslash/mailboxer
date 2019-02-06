@@ -2,15 +2,15 @@ use diesel;
 use diesel::prelude::*;
 use failure::Error;
 use native_tls::{Identity, TlsAcceptor, TlsStream};
-use schema::{email, mailbox};
+use crate::schema::{email, mailbox};
 use std::io::{BufRead, BufReader, Write};
 use std::iter::once;
 use std::net::TcpStream;
 use std::ops::Deref;
 use std::time::SystemTime;
-use utils::{ConnectionPool, LoggedResult};
+use crate::utils::{ConnectionPool, LoggedResult};
 
-use utils::StartsWithIgnoreCase;
+use crate::utils::StartsWithIgnoreCase;
 
 const _MAX_LINE_LENGTH: usize = 1024;
 

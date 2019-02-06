@@ -5,15 +5,15 @@ use diesel::{
     result::{DatabaseErrorKind::UniqueViolation, Error::DatabaseError},
     QueryDsl,
 };
-use errors::MailboxerError;
+use crate::errors::MailboxerError;
 use failure::Error;
-use models::{Email, Mailbox};
-use pagination::Pagination;
-use results::*;
-use schema::{email, mailbox};
+use crate::models::{Email, Mailbox};
+use crate::pagination::Pagination;
+use crate::results::*;
+use crate::schema::{email, mailbox};
 use std::time::{Duration, SystemTime};
-use utils::{ConnectionPool, LoggedResult};
-use vacuum::vacuum_old_mailboxes;
+use crate::utils::{ConnectionPool, LoggedResult};
+use crate::vacuum::vacuum_old_mailboxes;
 
 const _PAGE_SIZE: usize = 1000;
 

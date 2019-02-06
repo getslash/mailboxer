@@ -42,12 +42,12 @@ use diesel::r2d2::ConnectionManager;
 use dotenv::dotenv;
 use env_logger::Builder;
 use failure::Error;
-use smtp::SMTPSession;
+use crate::smtp::SMTPSession;
 use std::env;
 use std::net::TcpListener;
-use utils::ConnectionPool;
-use vacuum::VacuumCleaner;
-use web::make_app;
+use crate::utils::ConnectionPool;
+use crate::vacuum::VacuumCleaner;
+use crate::web::make_app;
 
 fn main() {
     dotenv().ok();

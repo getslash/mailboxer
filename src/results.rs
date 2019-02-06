@@ -1,5 +1,5 @@
 use actix_web::{Error, HttpRequest, HttpResponse, Responder, Result};
-use pagination::Pagination;
+use crate::pagination::Pagination;
 use serde::Serialize;
 
 pub struct Success;
