@@ -99,7 +99,7 @@ impl SMTPSession {
 
     fn write_all(&mut self, data: &[u8]) -> Result<(), Error> {
         let plain_writer = &mut self.plain_stream.get_mut();
-        let writer: &mut Write = if self.tls_stream.is_none() {
+        let writer: &mut dyn Write = if self.tls_stream.is_none() {
             plain_writer
         } else {
             self.tls_stream.as_mut().unwrap().get_mut()

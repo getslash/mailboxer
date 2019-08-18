@@ -79,7 +79,7 @@ fn main() {
 
     let _vacuum = VacuumCleaner::new(connmgr.clone()).start();
 
-    let bind_addr = "0.0.0.0:2525";
+    let bind_addr = ":::25";
     let listener = TcpListener::bind(bind_addr).unwrap();
     debug!("SMTP Server listening on {}", bind_addr);
 
@@ -98,7 +98,7 @@ fn main() {
     });
 
     server::new(move || make_app(connmgr.clone()))
-        .bind("0.0.0.0:8000")
+        .bind(":::8000")
         .expect("Cannot bind port")
         .system_exit()
         .start();
