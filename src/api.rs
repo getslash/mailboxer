@@ -45,7 +45,7 @@ pub fn make_inactive(
     }
 }
 
-#[cfg_attr(feature = "cargo-clippy", allow(needless_pass_by_value))]
+#[cfg_attr(feature = "cargo-clippy", allow(clippy::needless_pass_by_value))]
 pub fn vacuum(pool: State<ConnectionPool>) -> Result<Success, MailboxerError> {
     vacuum_old_mailboxes(&pool)
         .map_err(|_| MailboxerError::InternalServerError)
