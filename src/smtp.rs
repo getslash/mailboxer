@@ -1,16 +1,17 @@
+use crate::schema::{email, mailbox};
+use crate::utils::{ConnectionPool, LoggedResult};
 use diesel;
 use diesel::prelude::*;
-use failure::Error;
+use failure::{format_err, Error};
+use log::{debug, error};
 use native_tls::{Identity, TlsAcceptor, TlsStream};
-use schema::{email, mailbox};
 use std::io::{BufRead, BufReader, Write};
 use std::iter::once;
 use std::net::TcpStream;
 use std::ops::Deref;
 use std::time::SystemTime;
-use utils::{ConnectionPool, LoggedResult};
 
-use utils::StartsWithIgnoreCase;
+use crate::utils::StartsWithIgnoreCase;
 
 const _MAX_LINE_LENGTH: usize = 1024;
 
@@ -99,7 +100,7 @@ impl SMTPSession {
 
     fn write_all(&mut self, data: &[u8]) -> Result<(), Error> {
         let plain_writer = &mut self.plain_stream.get_mut();
-        let writer: &mut Write = if self.tls_stream.is_none() {
+        let writer: &mut dyn Write = if self.tls_stream.is_none() {
             plain_writer
         } else {
             self.tls_stream.as_mut().unwrap().get_mut()
@@ -182,7 +183,8 @@ impl SMTPSession {
                         email::columns::timestamp.eq(SystemTime::now()),
                         email::columns::message.eq(&data),
                         email::columns::sent_via_ssl.eq(self.tls_stream.is_some()),
-                    )).execute(&conn)
+                    ))
+                    .execute(&conn)
                     .log_errors()?;
 
                 diesel::update(mailbox::table.filter(mailbox::columns::id.eq(mailbox_id)))

@@ -1,3 +1,4 @@
+use serde_derive::Serialize;
 use std::time::SystemTime;
 
 #[derive(Queryable, Serialize)]

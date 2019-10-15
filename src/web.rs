@@ -1,7 +1,7 @@
 use actix_web::App;
-use api;
+use crate::api;
 use sentry_actix::SentryMiddleware;
-use utils::ConnectionPool;
+use crate::utils::ConnectionPool;
 
 pub fn make_app(pool: ConnectionPool) -> App<ConnectionPool> {
     App::with_state(pool)

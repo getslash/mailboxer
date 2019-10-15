@@ -1,10 +1,11 @@
+use crate::schema::mailbox;
+use crate::utils::{ConnectionPool, LoggedResult};
 use actix::prelude::*;
 use diesel;
 use diesel::prelude::*;
 use failure::Error;
-use schema::mailbox;
+use log::debug;
 use std::time::{Duration, SystemTime};
-use utils::{ConnectionPool, LoggedResult};
 
 const VACUUM_CUTOFF_SECS: u64 = 24 * 60 * 60 * 7; // one week
 const VACUUM_INTERVAL_SECS: u64 = 60 * 60;
