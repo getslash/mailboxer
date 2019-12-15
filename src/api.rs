@@ -14,6 +14,7 @@ use diesel::{
 };
 use failure::Error;
 use serde_derive::Deserialize;
+use std::convert::TryInto;
 use std::time::{Duration, SystemTime};
 
 const _PAGE_SIZE: usize = 1000;
@@ -56,13 +57,17 @@ pub fn vacuum(pool: State<ConnectionPool>) -> Result<Success, MailboxerError> {
 pub fn query_mailboxes(
     (connmgr, pagination): (State<ConnectionPool>, Query<Pagination>),
 ) -> Result<APIResult<Mailbox>, Error> {
+    let page_size: usize = pagination.get_page_size().try_into()?;
     let query = mailbox::table
         .order_by(mailbox::columns::last_activity.desc())
-        .offset(pagination.get_offset())
-        .limit(pagination.get_page_size());
+        .offset(pagination.offset())
+        .limit(pagination.limit() + 1);
+    let objs = query.load(&connmgr.get()?)?;
+    let has_more = objs.len() > page_size;
     Ok(APIResult::multiple(
-        query.load::<Mailbox>(&connmgr.get()?)?,
+        objs.into_iter().take(page_size).collect(),
         pagination.into_inner(),
+        has_more,
     ))
 }
 
@@ -141,10 +146,13 @@ pub fn query_emails(
         }
         query = query.order_by(email::columns::timestamp);
         query = query
-            .offset(pagination.get_offset())
-            .limit(pagination.get_page_size());
+            .offset(pagination.offset())
+            .limit(pagination.limit() + 1);
+
+        let page_size = pagination.get_page_size();
 
         let emails = query.load::<Email>(&conn)?;
+        let has_more = emails.len() > page_size;
         let unread_ids: Vec<_> = emails.iter().filter(|e| !e.read).map(|e| e.id).collect();
 
         if !unread_ids.is_empty() {
@@ -153,7 +161,11 @@ pub fn query_emails(
                 .execute(&conn)?;
         }
 
-        Ok(APIResult::multiple(emails, pagination))
+        Ok(APIResult::multiple(
+            emails.into_iter().take(page_size).collect(),
+            pagination,
+            has_more,
+        ))
     } else {
         Err(MailboxerError::MailboxNotFound)
     }

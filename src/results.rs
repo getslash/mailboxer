@@ -6,13 +6,13 @@ use serde_json::json;
 pub struct Success;
 
 pub enum APIResult<T: Serialize> {
-    QueryResult(Vec<T>, Pagination),
+    QueryResult(Vec<T>, Pagination, bool),
     SingleResult(T),
 }
 
 impl<T: Serialize> APIResult<T> {
-    pub fn multiple(result: Vec<T>, pagination: Pagination) -> Self {
-        APIResult::QueryResult(result, pagination)
+    pub fn multiple(result: Vec<T>, pagination: Pagination, has_more: bool) -> Self {
+        APIResult::QueryResult(result, pagination, has_more)
     }
 
     pub fn single(result: T) -> Self {
@@ -26,10 +26,12 @@ impl<T: Serialize> Responder for APIResult<T> {
 
     fn respond_to<S: 'static>(self, _req: &HttpRequest<S>) -> Result<Self::Item, Self::Error> {
         let returned = match self {
-            APIResult::QueryResult(results, pagination) => json!({
+            APIResult::QueryResult(results, pagination, has_more) => json!({
                 "result": results,
                 "metadata": {
                     "page": pagination.get_page(),
+                    "page_size": pagination.get_page_size(),
+                    "has_more": has_more,
                 }
             }),
             APIResult::SingleResult(result) => json!({
