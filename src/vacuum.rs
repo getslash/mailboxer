@@ -1,7 +1,6 @@
 use crate::schema::mailbox;
 use crate::utils::{ConnectionPool, LoggedResult};
 use actix::prelude::*;
-use diesel;
 use diesel::prelude::*;
 use failure::Error;
 use log::debug;

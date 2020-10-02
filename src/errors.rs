@@ -1,7 +1,5 @@
 use actix_web::{error, http, HttpResponse};
-use diesel;
 use failure::Fail;
-use r2d2;
 use std::convert::From;
 
 #[derive(Fail, Debug)]
