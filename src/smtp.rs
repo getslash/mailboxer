@@ -1,6 +1,5 @@
 use crate::schema::{email, mailbox};
 use crate::utils::{ConnectionPool, LoggedResult};
-use diesel;
 use diesel::prelude::*;
 use failure::{format_err, Error};
 use log::{debug, error};
@@ -142,18 +141,18 @@ impl SMTPSession {
 
     fn read_line(&mut self) -> Result<String, Error> {
         let mut returned = String::new();
-        let mut reader = self.get_reader();
+        let reader = self.get_reader();
 
         reader.read_line(&mut returned)?;
         Ok(returned)
     }
 
     // TODO stream should be a sum type
-    fn get_reader(&mut self) -> Box<&mut dyn BufRead> {
+    fn get_reader(&mut self) -> &mut dyn BufRead {
         if self.tls_stream.is_none() {
-            Box::new(&mut self.plain_stream)
+            &mut self.plain_stream
         } else {
-            Box::new(self.tls_stream.as_mut().unwrap())
+            self.tls_stream.as_mut().unwrap()
         }
     }
 
@@ -296,7 +295,7 @@ fn parse_recipient(recipient_string: &str) -> Result<&str, Error> {
     }
 }
 
-fn read_to_end_of_data(mut stream: Box<&mut dyn BufRead>) -> Result<String, Error> {
+fn read_to_end_of_data(stream: &mut dyn BufRead) -> Result<String, Error> {
     let mut returned = Vec::new();
     let pattern = b"\r\n.\r\n";
 
@@ -331,7 +330,7 @@ mod tests {
         let buf = format!("{}\r\n.\r\n{}", data, remainder);
 
         assert_eq!(
-            super::read_to_end_of_data(Box::new(&mut BufReader::new(buf.as_bytes()))).unwrap(),
+            super::read_to_end_of_data(&mut BufReader::new(buf.as_bytes())).unwrap(),
             data
         );
     }
@@ -355,7 +354,7 @@ mod tests {
     fn test_read_to_end_of_data_leaves_suffix() {
         let data = b"some data here\rwith\r\na suffix\r\n.\r\nquit\r\n";
         let mut buf_reader = Cursor::new(data.iter());
-        assert!(super::read_to_end_of_data(Box::new(&mut buf_reader)).is_ok());
+        assert!(super::read_to_end_of_data(&mut buf_reader).is_ok());
         let mut remainder = Vec::new();
         buf_reader.read_to_end(&mut remainder).unwrap();
         assert_eq!(String::from_utf8(remainder).unwrap(), "quit\r\n");
@@ -364,7 +363,7 @@ mod tests {
     #[test]
     fn test_parse_recipient() {
         assert_eq!(
-            super::parse_recipient("<some@email.com>".into()).unwrap(),
+            super::parse_recipient("<some@email.com>").unwrap(),
             "some@email.com"
         );
     }

@@ -6,15 +6,13 @@ use crate::schema::{email, mailbox};
 use crate::utils::{ConnectionPool, LoggedResult};
 use crate::vacuum::vacuum_old_mailboxes;
 use actix_web::{Json, Path, Query, Result, State};
-use diesel;
 use diesel::{
     prelude::*,
     result::{DatabaseErrorKind::UniqueViolation, Error::DatabaseError},
     QueryDsl,
 };
 use failure::Error;
-use serde_derive::Deserialize;
-use std::convert::TryInto;
+use serde::Deserialize;
 use std::time::{Duration, SystemTime};
 
 const _PAGE_SIZE: usize = 1000;
@@ -57,7 +55,7 @@ pub fn vacuum(pool: State<ConnectionPool>) -> Result<Success, MailboxerError> {
 pub fn query_mailboxes(
     (connmgr, pagination): (State<ConnectionPool>, Query<Pagination>),
 ) -> Result<APIResult<Mailbox>, Error> {
-    let page_size: usize = pagination.get_page_size().try_into()?;
+    let page_size: usize = pagination.get_page_size();
     let query = mailbox::table
         .order_by(mailbox::columns::last_activity.desc())
         .offset(pagination.offset())

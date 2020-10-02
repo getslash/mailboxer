@@ -2,7 +2,6 @@ use diesel::pg::PgConnection;
 use diesel::r2d2::ConnectionManager;
 use failure::AsFail;
 use log::error;
-use r2d2;
 use sentry::integrations::failure::capture_fail;
 use std::fmt::Debug;
 

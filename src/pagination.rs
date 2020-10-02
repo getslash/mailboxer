@@ -1,4 +1,4 @@
-use serde_derive::Deserialize;
+use serde::Deserialize;
 use std::cmp::max;
 
 #[derive(Deserialize, Debug)]
