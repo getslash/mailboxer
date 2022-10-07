@@ -27,10 +27,7 @@ enum SMTPVerb<'a> {
 
 impl<'a> SMTPVerb<'a> {
     fn is_handshake(&self) -> bool {
-        match self {
-            Ehlo | Helo => true,
-            _ => false,
-        }
+        matches!(self, Ehlo | Helo)
     }
 }
 
