@@ -1,25 +1,29 @@
-use actix_web::App;
 use crate::api;
-use sentry_actix::SentryMiddleware;
-use crate::utils::ConnectionPool;
+use actix_web::web;
 
-pub fn make_app(pool: ConnectionPool) -> App<ConnectionPool> {
-    App::with_state(pool)
-        .middleware(SentryMiddleware::new())
-        .prefix("/v2")
-        .resource("/_debug/make_inactive/{address}", |r| {
-            r.post().with(api::make_inactive)
-        }).resource("/mailboxes", |r| {
-            r.get().with(api::query_mailboxes);
-            r.post().with(api::create_mailbox);
-        }).resource("/mailboxes/{address}", |r| {
-            r.get().with(api::query_single_mailbox);
-            r.delete().with(api::delete_mailbox);
-        }).resource("/mailboxes/{address}/emails", |r| {
-            r.get().with(api::query_all_emails)
-        }).resource("/mailboxes/{address}/unread_emails", |r| {
-            r.get().with(api::query_unread_emails)
-        }).resource("/vacuum", |r| {
-            r.post().with(api::vacuum);
-        })
+pub fn configure_routes(config: &mut web::ServiceConfig) {
+    config
+        .route(
+            "/v2/_debug/make_inactive/{address}",
+            web::post().to(api::make_inactive),
+        )
+        .service(
+            web::resource("/v2/mailboxes")
+                .route(web::get().to(api::query_mailboxes))
+                .route(web::post().to(api::create_mailbox)),
+        )
+        .service(
+            web::resource("/v2/mailboxes/{address}")
+                .route(web::get().to(api::query_single_mailbox))
+                .route(web::delete().to(api::delete_mailbox)),
+        )
+        .service(
+            web::resource("/v2/mailboxes/{address}/emails")
+                .route(web::get().to(api::query_all_emails)),
+        )
+        .route(
+            "/v2/mailboxes/{address}/unread_emails",
+            web::get().to(api::query_unread_emails),
+        )
+        .route("/v2/vacuum", web::post().to(api::vacuum));
 }

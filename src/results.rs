@@ -1,5 +1,5 @@
 use crate::pagination::Pagination;
-use actix_web::{Error, HttpRequest, HttpResponse, Responder, Result};
+use actix_web::{body::BoxBody, HttpRequest, HttpResponse, Responder};
 use serde::Serialize;
 use serde_json::json;
 
@@ -21,10 +21,9 @@ impl<T: Serialize> APIResult<T> {
 }
 
 impl<T: Serialize> Responder for APIResult<T> {
-    type Item = HttpResponse;
-    type Error = Error;
+    type Body = BoxBody;
 
-    fn respond_to<S: 'static>(self, _req: &HttpRequest<S>) -> Result<Self::Item, Self::Error> {
+    fn respond_to(self, _req: &HttpRequest) -> HttpResponse<Self::Body> {
         let returned = match self {
             APIResult::QueryResult(results, pagination, has_more) => json!({
                 "result": results,
@@ -38,15 +37,14 @@ impl<T: Serialize> Responder for APIResult<T> {
                 "result": result,
             }),
         };
-        Ok(HttpResponse::Ok().json(returned))
+        HttpResponse::Ok().json(returned)
     }
 }
 
 impl Responder for Success {
-    type Item = HttpResponse;
-    type Error = Error;
+    type Body = BoxBody;
 
-    fn respond_to<S: 'static>(self, _req: &HttpRequest<S>) -> Result<Self::Item, Self::Error> {
-        Ok(HttpResponse::Ok().json(json!({"result": "ok"})))
+    fn respond_to(self, _req: &HttpRequest) -> HttpResponse<Self::Body> {
+        HttpResponse::Ok().json(json!({"result": "ok"}))
     }
 }

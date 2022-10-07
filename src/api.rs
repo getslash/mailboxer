@@ -5,13 +5,15 @@ use crate::results::*;
 use crate::schema::{email, mailbox};
 use crate::utils::{ConnectionPool, LoggedResult};
 use crate::vacuum::vacuum_old_mailboxes;
-use actix_web::{Json, Path, Query, Result, State};
+use actix_web::{
+    web::{Data, Json, Path, Query},
+    Result,
+};
 use diesel::{
     prelude::*,
     result::{DatabaseErrorKind::UniqueViolation, Error::DatabaseError},
     QueryDsl,
 };
-use failure::Error;
 use serde::Deserialize;
 use std::time::{Duration, SystemTime};
 
@@ -22,8 +24,9 @@ pub struct NewMailbox {
     address: String,
 }
 
-pub fn make_inactive(
-    (mailbox_address, pool): (Path<String>, State<ConnectionPool>),
+pub async fn make_inactive(
+    mailbox_address: Path<String>,
+    pool: Data<ConnectionPool>,
 ) -> Result<Success, MailboxerError> {
     let conn = pool.get()?;
     if let Some(mb) = mailbox::table
@@ -44,17 +47,17 @@ pub fn make_inactive(
     }
 }
 
-#[cfg_attr(feature = "cargo-clippy", allow(clippy::needless_pass_by_value))]
-pub fn vacuum(pool: State<ConnectionPool>) -> Result<Success, MailboxerError> {
+pub async fn vacuum(pool: Data<ConnectionPool>) -> Result<Success, MailboxerError> {
     vacuum_old_mailboxes(&pool)
         .map_err(|_| MailboxerError::InternalServerError)
         .log_errors()?;
     Ok(Success)
 }
 
-pub fn query_mailboxes(
-    (connmgr, pagination): (State<ConnectionPool>, Query<Pagination>),
-) -> Result<APIResult<Mailbox>, Error> {
+pub async fn query_mailboxes(
+    connmgr: Data<ConnectionPool>,
+    pagination: Query<Pagination>,
+) -> Result<APIResult<Mailbox>, MailboxerError> {
     let page_size: usize = pagination.get_page_size();
     let query = mailbox::table
         .order_by(mailbox::columns::last_activity.desc())
@@ -69,8 +72,8 @@ pub fn query_mailboxes(
     ))
 }
 
-pub fn query_single_mailbox(
-    (mailbox_address, pool): (Path<String>, State<ConnectionPool>),
+pub async fn query_single_mailbox(
+    (mailbox_address, pool): (Path<String>, Data<ConnectionPool>),
 ) -> Result<APIResult<Mailbox>, MailboxerError> {
     let conn = pool.get()?;
     if let Some(mb) = mailbox::table
@@ -84,8 +87,8 @@ pub fn query_single_mailbox(
     }
 }
 
-pub fn create_mailbox(
-    (new_mailbox, state): (Json<NewMailbox>, State<ConnectionPool>),
+pub async fn create_mailbox(
+    (new_mailbox, state): (Json<NewMailbox>, Data<ConnectionPool>),
 ) -> Result<Success, MailboxerError> {
     let address = new_mailbox.into_inner().address;
 
@@ -102,8 +105,8 @@ pub fn create_mailbox(
     Ok(Success)
 }
 
-pub fn delete_mailbox(
-    (mailbox_address, pool): (Path<String>, State<ConnectionPool>),
+pub async fn delete_mailbox(
+    (mailbox_address, pool): (Path<String>, Data<ConnectionPool>),
 ) -> Result<Success, MailboxerError> {
     diesel::delete(mailbox::table.filter(mailbox::columns::address.eq(mailbox_address.as_ref())))
         .execute(&pool.get()?)
@@ -112,19 +115,19 @@ pub fn delete_mailbox(
         .map_err(MailboxerError::from)
 }
 
-pub fn query_unread_emails(
-    (address, pool, pagination): (Path<String>, State<ConnectionPool>, Query<Pagination>),
+pub async fn query_unread_emails(
+    (address, pool, pagination): (Path<String>, Data<ConnectionPool>, Query<Pagination>),
 ) -> Result<APIResult<Email>, MailboxerError> {
-    query_emails(address.as_ref(), &pool, pagination.into_inner(), false)
+    query_emails(address.as_ref(), &pool, pagination.into_inner(), false).await
 }
 
-pub fn query_all_emails(
-    (address, pool, pagination): (Path<String>, State<ConnectionPool>, Query<Pagination>),
+pub async fn query_all_emails(
+    (address, pool, pagination): (Path<String>, Data<ConnectionPool>, Query<Pagination>),
 ) -> Result<APIResult<Email>, MailboxerError> {
-    query_emails(address.as_ref(), &pool, pagination.into_inner(), true)
+    query_emails(address.as_ref(), &pool, pagination.into_inner(), true).await
 }
 
-pub fn query_emails(
+pub async fn query_emails(
     address: &str,
     pool: &ConnectionPool,
     pagination: Pagination,

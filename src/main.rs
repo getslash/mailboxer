@@ -18,24 +18,25 @@ mod web;
 
 use crate::smtp::SMTPSession;
 use crate::utils::ConnectionPool;
-use crate::vacuum::VacuumCleaner;
-use crate::web::make_app;
-use actix::prelude::*;
-use actix_web::server;
+use crate::vacuum::spawn_vacuum;
+use crate::web::configure_routes;
+use actix_web::web::Data;
+use actix_web::{App, HttpServer};
+use anyhow::Context;
 use diesel::r2d2::ConnectionManager;
 use dotenv::dotenv;
 use env_logger::Builder;
-use failure::Error;
 use log::{debug, error};
+use sentry_actix::Sentry;
 use std::env;
 use std::net::TcpListener;
 
-fn main() {
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
     dotenv().ok();
 
     let _guard = sentry::init(env::var("SENTRY_DSN").ok());
     env::set_var("RUST_BACKTRACE", "1");
-    sentry::integrations::panic::register_panic_handler();
 
     Builder::new()
         .filter_module("mailboxer", log::LevelFilter::Debug)
@@ -44,24 +45,22 @@ fn main() {
 
     debug!("Mailboxer starting...");
 
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let database_url = env::var("DATABASE_URL").context("DATABASE_URL must be set")?;
     let connmgr = r2d2::Pool::builder()
         .max_size(16)
         .build(ConnectionManager::new(database_url))
-        .expect("Unable to initialize pool manager");
+        .context("Unable to initialize pool manager")?;
 
     debug!("Running migrations...");
 
-    run_migrations(&connmgr).expect("Unable to run migrations");
+    run_migrations(&connmgr).context("Unable to run migrations")?;
 
     debug!("Migrations complete. Starting system...");
 
-    let sys = System::new("mailboxer");
-
-    let _vacuum = VacuumCleaner::new(connmgr.clone()).start();
+    spawn_vacuum(connmgr.clone());
 
     let bind_addr = "0.0.0.0:2525";
-    let listener = TcpListener::bind(bind_addr).unwrap();
+    let listener = TcpListener::bind(bind_addr)?;
     debug!("SMTP Server listening on {}", bind_addr);
 
     let smtp_connmgr = connmgr.clone();
@@ -78,19 +77,24 @@ fn main() {
         }
     });
 
-    server::new(move || make_app(connmgr.clone()))
-        .bind("0.0.0.0:8000")
-        .expect("Cannot bind port")
-        .system_exit()
-        .start();
-    sys.run();
+    HttpServer::new(move || {
+        App::new()
+            .app_data(Data::new(connmgr.clone()))
+            .wrap(Sentry::new())
+            .configure(configure_routes)
+    })
+    .bind(("0.0.0.0", 8080))?
+    .run()
+    .await?;
+
+    Ok(())
 }
 
-fn run_migrations(connmgr: &ConnectionPool) -> Result<(), Error> {
+fn run_migrations(connmgr: &ConnectionPool) -> anyhow::Result<()> {
     embed_migrations!();
     let conn = connmgr.get()?;
 
     embedded_migrations::run(&conn)
-        .map_err(Error::from)
+        .map_err(anyhow::Error::from)
         .map(drop)
 }

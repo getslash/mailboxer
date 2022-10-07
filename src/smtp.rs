@@ -1,7 +1,7 @@
 use crate::schema::{email, mailbox};
 use crate::utils::{ConnectionPool, LoggedResult};
+use anyhow::{format_err, Error};
 use diesel::prelude::*;
-use failure::{format_err, Error};
 use log::{debug, error};
 use native_tls::{Identity, TlsAcceptor, TlsStream};
 use std::io::{BufRead, BufReader, Write};

@@ -1,14 +1,13 @@
 use actix_web::{error, http, HttpResponse};
-use failure::Fail;
 use std::convert::From;
 
-#[derive(Fail, Debug)]
+#[derive(thiserror::Error, Debug)]
 pub enum MailboxerError {
-    #[fail(display = "Mailbox already exists")]
+    #[error("Mailbox already exists")]
     MailboxAlreadyExists,
-    #[fail(display = "Mailbox not found")]
+    #[error("Mailbox not found")]
     MailboxNotFound,
-    #[fail(display = "Internal error")]
+    #[error("Internal error")]
     InternalServerError,
 }
 
@@ -31,9 +30,7 @@ impl error::ResponseError for MailboxerError {
             MailboxerError::InternalServerError => {
                 HttpResponse::new(http::StatusCode::INTERNAL_SERVER_ERROR)
             }
-            ref e @ MailboxerError::MailboxNotFound => {
-                HttpResponse::with_body(http::StatusCode::NOT_FOUND, e.to_string())
-            }
+            ref e @ MailboxerError::MailboxNotFound => HttpResponse::NotFound().body(e.to_string()),
         }
     }
 }
