@@ -58,3 +58,4 @@ tests/.cache
 
 /target
 **/*.rs.bk
+/.vscode

@@ -1,7 +1,7 @@
 use crate::schema::{email, mailbox};
 use crate::utils::{ConnectionPool, LoggedResult};
+use anyhow::{format_err, Error};
 use diesel::prelude::*;
-use failure::{format_err, Error};
 use log::{debug, error};
 use native_tls::{Identity, TlsAcceptor, TlsStream};
 use std::io::{BufRead, BufReader, Write};
@@ -27,10 +27,7 @@ enum SMTPVerb<'a> {
 
 impl<'a> SMTPVerb<'a> {
     fn is_handshake(&self) -> bool {
-        match self {
-            Ehlo | Helo => true,
-            _ => false,
-        }
+        matches!(self, Ehlo | Helo)
     }
 }
 
@@ -229,7 +226,7 @@ impl SMTPSession {
             debug!("Parsed: {:?}", parsed);
 
             if let Quit = parsed {
-                let returned = self.enqueue(&pool);
+                let returned = self.enqueue(pool);
                 self.send_status(221, "Bye")?;
                 return returned;
             }
