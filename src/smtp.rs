@@ -229,7 +229,7 @@ impl SMTPSession {
             debug!("Parsed: {:?}", parsed);
 
             if let Quit = parsed {
-                let returned = self.enqueue(&pool);
+                let returned = self.enqueue(pool);
                 self.send_status(221, "Bye")?;
                 return returned;
             }
