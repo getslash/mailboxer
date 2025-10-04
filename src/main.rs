@@ -2,8 +2,6 @@
 
 #[macro_use]
 extern crate diesel;
-#[macro_use]
-extern crate diesel_migrations;
 
 mod api;
 mod errors;
@@ -24,6 +22,7 @@ use actix_web::web::Data;
 use actix_web::{App, HttpServer};
 use anyhow::Context;
 use diesel::r2d2::ConnectionManager;
+use diesel_migrations::MigrationHarness;
 use dotenv::dotenv;
 use env_logger::Builder;
 use log::{debug, error};
@@ -91,10 +90,10 @@ async fn main() -> anyhow::Result<()> {
 }
 
 fn run_migrations(connmgr: &ConnectionPool) -> anyhow::Result<()> {
-    embed_migrations!();
-    let conn = connmgr.get()?;
+    pub const MIGRATIONS: diesel_migrations::EmbeddedMigrations = diesel_migrations::embed_migrations!();
+    let mut conn = connmgr.get()?;
 
-    embedded_migrations::run(&conn)
-        .map_err(anyhow::Error::from)
+    conn.run_pending_migrations(MIGRATIONS)
+        .map_err(|e| anyhow::Error::msg(format!("Migration error: {}", e)))
         .map(drop)
 }

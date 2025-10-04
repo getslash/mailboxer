@@ -163,29 +163,29 @@ impl SMTPSession {
 
         let data = self.data.as_ref().unwrap();
 
-        let conn = pool.get()?;
+        let mut conn = pool.get()?;
 
         for recipient in &self.recipients {
             if let Some(mailbox_id) = mailbox::table
-                .select(mailbox::columns::id)
-                .filter(mailbox::columns::address.eq(&recipient))
-                .first::<i32>(&conn)
+                .select(mailbox::id)
+                .filter(mailbox::address.eq(&recipient))
+                .first::<i32>(&mut conn)
                 .optional()?
             {
                 diesel::insert_into(email::table)
                     .values((
-                        email::columns::fromaddr.eq(self.sender.as_ref().unwrap()),
-                        email::columns::mailbox_id.eq(mailbox_id),
-                        email::columns::timestamp.eq(SystemTime::now()),
-                        email::columns::message.eq(&data),
-                        email::columns::sent_via_ssl.eq(self.tls_stream.is_some()),
+                        email::fromaddr.eq(self.sender.as_ref().unwrap()),
+                        email::mailbox_id.eq(mailbox_id),
+                        email::timestamp.eq(SystemTime::now()),
+                        email::message.eq(&data),
+                        email::sent_via_ssl.eq(self.tls_stream.is_some()),
                     ))
-                    .execute(&conn)
+                    .execute(&mut conn)
                     .log_errors()?;
 
-                diesel::update(mailbox::table.filter(mailbox::columns::id.eq(mailbox_id)))
-                    .set(mailbox::columns::last_activity.eq(SystemTime::now()))
-                    .execute(&conn)
+                diesel::update(mailbox::table.filter(mailbox::id.eq(mailbox_id)))
+                    .set(mailbox::last_activity.eq(SystemTime::now()))
+                    .execute(&mut conn)
                     .log_errors()?;
 
                 debug!("Enqueued message for {}", recipient);

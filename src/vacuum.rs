@@ -24,8 +24,9 @@ pub fn vacuum_old_mailboxes(pool: &ConnectionPool) -> anyhow::Result<()> {
         "Vacuuming - deleting inactive mailboxes older than {:?}...",
         cutoff
     );
-    diesel::delete(mailbox::table.filter(mailbox::columns::last_activity.lt(cutoff)))
-        .execute(&pool.get()?)
+    let mut conn = pool.get()?;
+    diesel::delete(mailbox::table.filter(mailbox::last_activity.lt(cutoff)))
+        .execute(&mut conn)
         .log_errors()?;
     debug!("Vacuum complete");
     Ok(())
