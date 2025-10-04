@@ -28,18 +28,18 @@ pub async fn make_inactive(
     mailbox_address: Path<String>,
     pool: Data<ConnectionPool>,
 ) -> Result<Success, MailboxerError> {
-    let conn = pool.get()?;
+    let mut conn = pool.get()?;
     if let Some(mb) = mailbox::table
-        .filter(mailbox::columns::address.eq(mailbox_address.as_ref()))
-        .first::<Mailbox>(&conn)
+        .filter(mailbox::address.eq(mailbox_address.as_ref()))
+        .first::<Mailbox>(&mut conn)
         .optional()?
     {
-        diesel::update(mailbox::table.filter(mailbox::columns::id.eq(mb.id)))
+        diesel::update(mailbox::table.filter(mailbox::id.eq(mb.id)))
             .set(
-                mailbox::columns::last_activity
+                mailbox::last_activity
                     .eq(SystemTime::now() - Duration::from_secs(500 * 24 * 60 * 60)),
             )
-            .execute(&conn)
+            .execute(&mut conn)
             .log_errors()?;
         Ok(Success)
     } else {
@@ -60,10 +60,11 @@ pub async fn query_mailboxes(
 ) -> Result<APIResult<Mailbox>, MailboxerError> {
     let page_size: usize = pagination.get_page_size();
     let query = mailbox::table
-        .order_by(mailbox::columns::last_activity.desc())
+        .order_by(mailbox::last_activity.desc())
         .offset(pagination.offset())
         .limit(pagination.limit() + 1);
-    let objs = query.load(&connmgr.get()?)?;
+    let mut conn = connmgr.get()?;
+    let objs = query.load(&mut conn)?;
     let has_more = objs.len() > page_size;
     Ok(APIResult::multiple(
         objs.into_iter().take(page_size).collect(),
@@ -75,10 +76,10 @@ pub async fn query_mailboxes(
 pub async fn query_single_mailbox(
     (mailbox_address, pool): (Path<String>, Data<ConnectionPool>),
 ) -> Result<APIResult<Mailbox>, MailboxerError> {
-    let conn = pool.get()?;
+    let mut conn = pool.get()?;
     if let Some(mb) = mailbox::table
-        .filter(mailbox::columns::address.eq(mailbox_address.as_ref()))
-        .first::<Mailbox>(&conn)
+        .filter(mailbox::address.eq(mailbox_address.as_ref()))
+        .first::<Mailbox>(&mut conn)
         .optional()?
     {
         Ok(APIResult::single(mb))
@@ -92,11 +93,11 @@ pub async fn create_mailbox(
 ) -> Result<Success, MailboxerError> {
     let address = new_mailbox.into_inner().address;
 
-    let conn = state.get().log_errors()?;
+    let mut conn = state.get().log_errors()?;
 
     let res = diesel::insert_into(mailbox::table)
-        .values(mailbox::dsl::address.eq(&address))
-        .execute(&conn)
+        .values(mailbox::address.eq(&address))
+        .execute(&mut conn)
         .log_errors();
     if let Err(DatabaseError(UniqueViolation, _)) = res {
         return Err(MailboxerError::MailboxAlreadyExists);
@@ -108,8 +109,9 @@ pub async fn create_mailbox(
 pub async fn delete_mailbox(
     (mailbox_address, pool): (Path<String>, Data<ConnectionPool>),
 ) -> Result<Success, MailboxerError> {
-    diesel::delete(mailbox::table.filter(mailbox::columns::address.eq(mailbox_address.as_ref())))
-        .execute(&pool.get()?)
+    let mut conn = pool.get()?;
+    diesel::delete(mailbox::table.filter(mailbox::address.eq(mailbox_address.as_ref())))
+        .execute(&mut conn)
         .map(|_| Success)
         .log_errors()
         .map_err(MailboxerError::from)
@@ -133,33 +135,33 @@ pub async fn query_emails(
     pagination: Pagination,
     include_read: bool,
 ) -> Result<APIResult<Email>, MailboxerError> {
-    let conn = pool.get()?;
+    let mut conn = pool.get()?;
     if let Some(mailbox) = mailbox::table
-        .filter(mailbox::columns::address.eq(address))
-        .first::<Mailbox>(&conn)
+        .filter(mailbox::address.eq(address))
+        .first::<Mailbox>(&mut conn)
         .optional()?
     {
         let mut query = email::table.into_boxed();
 
-        query = query.filter(email::columns::mailbox_id.eq(mailbox.id));
+        query = query.filter(email::mailbox_id.eq(mailbox.id));
         if !include_read {
-            query = query.filter(email::columns::read.eq(false));
+            query = query.filter(email::read.eq(false));
         }
-        query = query.order_by(email::columns::timestamp);
+        query = query.order_by(email::timestamp);
         query = query
             .offset(pagination.offset())
             .limit(pagination.limit() + 1);
 
         let page_size = pagination.get_page_size();
 
-        let emails = query.load::<Email>(&conn)?;
+        let emails = query.load::<Email>(&mut conn)?;
         let has_more = emails.len() > page_size;
         let unread_ids: Vec<_> = emails.iter().filter(|e| !e.read).map(|e| e.id).collect();
 
         if !unread_ids.is_empty() {
-            diesel::update(email::table.filter(email::columns::id.eq_any(&unread_ids)))
-                .set(email::columns::read.eq(true))
-                .execute(&conn)?;
+            diesel::update(email::table.filter(email::id.eq_any(&unread_ids)))
+                .set(email::read.eq(true))
+                .execute(&mut conn)?;
         }
 
         Ok(APIResult::multiple(
